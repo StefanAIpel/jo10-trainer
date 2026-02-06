@@ -1606,10 +1606,61 @@
                             ${content} <small style="opacity:0.6">K${n.quarter}</small>
                             ${n.text ? `<br><span style="color:rgba(255,255,255,0.6)">${n.text}</span>` : ''}
                         </div>
-                        <button class="note-delete" onclick="deleteNote(${i})">×</button>
+                        <div style="display:flex;gap:6px;">
+                            <button style="background:none;border:none;color:#FFD700;cursor:pointer;font-size:0.9em;padding:2px;" onclick="shareNote(${i})">📤</button>
+                            <button class="note-delete" onclick="deleteNote(${i})">×</button>
+                        </div>
                     </div>
                 `;
             }).join('') || '<p style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.85em">Nog geen items</p>';
+        }
+        
+        function shareNote(index) {
+            const notes = getNotes();
+            const n = notes[index];
+            if (!n) return;
+            
+            const match = getMatch();
+            const team = teams[currentTeam];
+            const isHome = match.isHome !== false;
+            const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅', sub:'🔄' };
+            
+            // Bereken stand op dit moment (tel goals voor deze notitie)
+            let homeGoals = 0, awayGoals = 0;
+            const sorted = [...notes].sort((a, b) => (a.matchMinute || 0) - (b.matchMinute || 0));
+            for (const note of sorted) {
+                if (note.type === 'goal') homeGoals++;
+                if (note.type === 'opponent_goal') awayGoals++;
+                if (note === n) break;
+            }
+            const score = isHome ? `${homeGoals}-${awayGoals}` : `${awayGoals}-${homeGoals}`;
+            
+            let text = `K${n.quarter} `;
+            if (n.matchMinute !== undefined) text += `'${n.matchMinute} `;
+            
+            if (n.type === 'goal') {
+                text += `${icons.goal} Goal ${score}: ${n.player}`;
+            } else if (n.type === 'opponent_goal') {
+                text += `${icons.opponent_goal} Tegengoal ${score}`;
+            } else if (n.type === 'sub' && n.playerOut && n.playerIn) {
+                text += `${icons.sub} Wissel: ${n.playerOut} ➜ ${n.playerIn}`;
+            } else if (n.type === 'injury') {
+                text += `${icons.injury} Blessure: ${n.player}`;
+                if (n.replacement) text += ` ➜ ${n.replacement}`;
+            } else if (n.type === 'assist') {
+                text += `${icons.assist} Assist: ${n.player}`;
+            } else {
+                text += `${icons[n.type] || '📝'} ${n.player || ''}`;
+            }
+            
+            if (n.text) text += ` - ${n.text}`;
+            
+            if (navigator.share) {
+                navigator.share({ text });
+            } else {
+                navigator.clipboard.writeText(text);
+                showToast('📋 Gekopieerd!');
+            }
         }
         
         function deleteNote(index) {
