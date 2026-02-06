@@ -1962,9 +1962,8 @@
                 if (clockInPause) {
                     pauseSeconds--;
                     if (pauseSeconds <= 0) {
-                        clockInPause = false;
-                        clockSeconds = 0;
-                        showToast(`▶️ K${clockQuarter} gestart!`);
+                        startNextQuarter();
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     }
                     updateClockDisplay();
                 } else {
@@ -1985,20 +1984,39 @@
                 navigator.vibrate([200, 100, 200, 100, 200]);
             }
             
-            clockQuarter++;
+            // Pauze hoort nog bij huidige kwart voor notities
+            // clockQuarter blijft hetzelfde tot pauze voorbij
             clockInPause = true;
-            pauseSeconds = clockQuarter === 3 ? LONG_PAUSE : SHORT_PAUSE;
+            const nextQ = clockQuarter + 1;
+            pauseSeconds = nextQ === 3 ? LONG_PAUSE : SHORT_PAUSE;
             
+            // Toon welk kwart komt na pauze
+            document.getElementById('clockQuarter').textContent = `→K${nextQ}`;
+            showToast(`⏸️ Pauze K${clockQuarter}→K${nextQ}`);
+        }
+        
+        function startNextQuarter() {
+            // Called when pause ends or skipped
+            clockQuarter++;
+            clockInPause = false;
+            clockSeconds = 0;
             document.getElementById('clockQuarter').textContent = `K${clockQuarter}`;
             document.querySelectorAll('.quarter-tab').forEach((t, i) => {
                 t.classList.toggle('active', i + 1 === clockQuarter);
             });
             currentQuarter = clockQuarter;
             renderLineup();
-            showToast(`⏸️ Pauze - K${clockQuarter} over ${Math.floor(pauseSeconds/60)}:${(pauseSeconds%60).toString().padStart(2,'0')}`);
+            showToast(`▶️ K${clockQuarter} gestart!`);
         }
         
         function stopQuarter() {
+            // Als in pauze → skip pauze en start volgende kwart
+            if (clockInPause) {
+                if (navigator.vibrate) navigator.vibrate([100]);
+                startNextQuarter();
+                return;
+            }
+            
             if (clockQuarter >= 4 && clockSeconds >= QUARTER_DURATION) {
                 showToast('🏁 Wedstrijd afgelopen!');
                 pauseClock();
