@@ -299,6 +299,24 @@
             border: 1px solid rgba(255,215,0,0.3);
             font-weight: 500;
         }
+        .bench-player.warning {
+            background: rgba(231,76,60,0.25);
+            border-color: #e74c3c;
+            color: #ff6b6b;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .bench-warning {
+            font-size: 0.7em;
+            color: #e74c3c;
+            margin-top: 6px;
+            padding: 4px 8px;
+            background: rgba(231,76,60,0.15);
+            border-radius: 4px;
+        }
         
         /* 8v8 MIX SELECTIE */
         .mix-section {
@@ -980,9 +998,32 @@
             
             const onField = Object.values(q).filter(p => p);
             const bench = team.spelers.filter(p => !onField.includes(p));
-            document.getElementById('benchPlayers').innerHTML = bench.length > 0 
-                ? bench.map(p => `<div class="bench-player">${p}</div>`).join('')
-                : '<span style="color:rgba(255,255,255,0.4);font-size:0.8em;">Iedereen op veld</span>';
+            
+            // Check who was also on bench in linked quarter (K1↔K2, K3↔K4)
+            const linkedQuarter = currentQuarter === 1 ? 2 : (currentQuarter === 2 ? 1 : (currentQuarter === 3 ? 4 : 3));
+            const linkedLineup = lineup[linkedQuarter] || {};
+            const linkedOnField = Object.values(linkedLineup).filter(p => p);
+            const linkedBench = team.spelers.filter(p => !linkedOnField.includes(p));
+            
+            // Players on bench in both linked quarters = warning
+            const doubleBench = bench.filter(p => linkedBench.includes(p));
+            
+            let benchHtml = '';
+            if (bench.length > 0) {
+                benchHtml = bench.map(p => {
+                    const isWarning = doubleBench.includes(p);
+                    return `<div class="bench-player ${isWarning ? 'warning' : ''}">${p}${isWarning ? ' ⚠️' : ''}</div>`;
+                }).join('');
+                
+                if (doubleBench.length > 0) {
+                    const linkedLabel = linkedQuarter < currentQuarter ? `K${linkedQuarter}` : `K${linkedQuarter}`;
+                    benchHtml += `<div class="bench-warning">⚠️ ${doubleBench.join(', ')} staat ook wissel in K${linkedQuarter}!</div>`;
+                }
+            } else {
+                benchHtml = '<span style="color:rgba(255,255,255,0.4);font-size:0.8em;">Iedereen op veld</span>';
+            }
+            
+            document.getElementById('benchPlayers').innerHTML = benchHtml;
         }
         
         function renderNotes() {
@@ -1050,12 +1091,27 @@
             }
         }
         
-        // Quarter tabs
+        // Quarter tabs with auto-copy logic
         document.querySelectorAll('.quarter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.quarter-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 currentQuarter = parseInt(tab.dataset.quarter);
+                
+                // Auto-copy: K1→K2, K3→K4 if target is empty
+                const lineup = getLineup();
+                const sourceQuarter = currentQuarter === 2 ? 1 : (currentQuarter === 4 ? 3 : null);
+                
+                if (sourceQuarter) {
+                    const targetLineup = lineup[currentQuarter] || {};
+                    const isEmpty = Object.values(targetLineup).every(v => !v);
+                    
+                    if (isEmpty && lineup[sourceQuarter]) {
+                        lineup[currentQuarter] = {...lineup[sourceQuarter]};
+                        setLineup(lineup);
+                    }
+                }
+                
                 renderLineup();
             });
         });
