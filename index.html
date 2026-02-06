@@ -1592,15 +1592,23 @@
             const team = teams[currentTeam];
             const match = getMatch();
             const lineup = getLineup();
+            const available = getAvailablePlayers();
+            
+            // Voetbal volgorde: K, RV, LV, M/CM, RM, LM, RA, LA, SP
+            const positionOrder = ['K', 'RV', 'LV', 'CV', 'M', 'RM', 'LM', 'RCM', 'LCM', 'CM', 'RA', 'LA', 'SP'];
             
             let text = `⚽ ${team.naam} vs ${match.opponent || '?'}\n`;
             text += `📊 Formatie: ${currentFormation}\n\n`;
             
             for (let q = 1; q <= 4; q++) {
                 const l = lineup[q] || {};
-                const players = Object.entries(l).filter(([k,v]) => v).map(([k,v]) => `${k}:${v}`).join(' | ');
+                // Sort by football position order
+                const sortedEntries = Object.entries(l)
+                    .filter(([k,v]) => v)
+                    .sort((a, b) => positionOrder.indexOf(a[0]) - positionOrder.indexOf(b[0]));
+                const players = sortedEntries.map(([k,v]) => `${k}:${v}`).join(' | ');
                 const onField = Object.values(l).filter(p => p);
-                const bench = team.spelers.filter(p => !onField.includes(p));
+                const bench = available.filter(p => !onField.includes(p));
                 text += `📋 K${q}: ${players || '-'}\n`;
                 if (bench.length) text += `   🪑 ${bench.join(', ')}\n`;
             }
