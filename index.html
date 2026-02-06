@@ -500,7 +500,7 @@
             font-weight: 700;
             color: #FFD700;
         }
-        .team-name-score { font-size: 0.8em; max-width: 70px; color: rgba(255,255,255,0.8); }
+        .team-name-score { font-size: 0.8em; color: rgba(255,255,255,0.8); }
         
         .player-select {
             width: 100%;
@@ -1320,7 +1320,7 @@
             document.getElementById('opponentInput').value = match.opponent || '';
             document.getElementById('scoreHome').textContent = match.scoreHome || 0;
             document.getElementById('scoreAway').textContent = match.scoreAway || 0;
-            document.getElementById('awayTeam').textContent = (match.opponent || 'TEG').split(' ')[0].substring(0, 6);
+            document.getElementById('awayTeam').textContent = match.opponent || 'TEG';
             document.getElementById('infoOpponent').textContent = match.opponent || '-';
         }
         
