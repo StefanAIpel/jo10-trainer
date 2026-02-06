@@ -1317,11 +1317,24 @@
         
         function updateMatchDisplay() {
             const match = getMatch();
+            const team = teams[currentTeam];
+            const isHome = match.isHome !== false;
+            
             document.getElementById('opponentInput').value = match.opponent || '';
-            document.getElementById('scoreHome').textContent = match.scoreHome || 0;
-            document.getElementById('scoreAway').textContent = match.scoreAway || 0;
-            document.getElementById('awayTeam').textContent = match.opponent || 'TEG';
             document.getElementById('infoOpponent').textContent = match.opponent || '-';
+            
+            // Bij uit: tegenstander eerst, bij thuis: eigen team eerst
+            if (isHome) {
+                document.getElementById('homeTeam').textContent = team.naam;
+                document.getElementById('awayTeam').textContent = match.opponent || 'TEG';
+                document.getElementById('scoreHome').textContent = match.scoreHome || 0;
+                document.getElementById('scoreAway').textContent = match.scoreAway || 0;
+            } else {
+                document.getElementById('homeTeam').textContent = match.opponent || 'TEG';
+                document.getElementById('awayTeam').textContent = team.naam;
+                document.getElementById('scoreHome').textContent = match.scoreAway || 0;
+                document.getElementById('scoreAway').textContent = match.scoreHome || 0;
+            }
         }
         
         // AUTO OPSTELLING
@@ -1419,7 +1432,6 @@
             const match = getMatch();
             
             updateMatchDisplay();
-            document.getElementById('homeTeam').textContent = team.naam;
             document.getElementById('infoTeamName').textContent = team.naam;
             document.getElementById('infoTrainer').textContent = team.trainer;
             document.getElementById('infoManager').textContent = team.manager;
@@ -2171,6 +2183,7 @@
             btn.textContent = match.isHome ? '🏠 Thuis' : '🚗 Uit';
             btn.classList.toggle('away', !match.isHome);
             setMatch(match);
+            updateMatchDisplay();
         }
         
         function updateStartTime() {
