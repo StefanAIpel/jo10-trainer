@@ -1607,8 +1607,8 @@
             const lineup = getLineup();
             const available = getAvailablePlayers();
             
-            // Voetbal volgorde: K, RV, LV, M/CM, RM, LM, RA, LA, SP
-            const positionOrder = ['K', 'RV', 'LV', 'CV', 'M', 'RM', 'LM', 'RCM', 'LCM', 'CM', 'RA', 'LA', 'SP'];
+            // Voetbal volgorde: K=1, RV=2, LV=3, M=4, RA=5, LA=6
+            const positionOrder = ['K', 'RV', 'LV', 'CV', 'M', 'RA', 'LA', 'RM', 'CM', 'LM', 'RCM', 'LCM', 'SP'];
             
             let text = `⚽ ${team.naam} vs ${match.opponent || '?'}\n`;
             text += `📊 Formatie: ${currentFormation}\n\n`;
