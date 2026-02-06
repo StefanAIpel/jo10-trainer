@@ -1,1100 +1,1049 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="JO10 Trainer">
-  <meta name="theme-color" content="#0a0f1a">
-  <meta name="description" content="VV Hooglanderveen JO10 Trainersapp - Opstellingen, wedstrijden en 8v8 modus">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <title>JO10 Trainer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #0a0f1a;
-      --bg-card: #141c2b;
-      --bg-card-hover: #1a2435;
-      --accent: #00ff87;
-      --accent-dim: rgba(0,255,135,0.15);
-      --gold: #ffd700;
-      --red: #ff4757;
-      --blue: #3498db;
-      --purple: #9b59b6;
-      --text: #ffffff;
-      --text-dim: rgba(255,255,255,0.6);
-      --border: rgba(255,255,255,0.08);
-    }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg-dark);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 70px;
-      font-size: 13px;
-    }
-    
-    /* HEADER - Compact Pro Style */
-    .header {
-      background: linear-gradient(180deg, #141c2b 0%, var(--bg-dark) 100%);
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .logo {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--accent), #00cc6a);
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      box-shadow: 0 2px 8px rgba(0,255,135,0.3);
-    }
-    .header-text h1 { font-size: 0.8rem; font-weight: 700; letter-spacing: -0.5px; }
-    .header-text p { font-size: 0.6rem; color: var(--text-dim); font-weight: 500; }
-    
-    /* TEAM TABS - Smaller */
-    .team-tabs {
-      display: flex;
-      gap: 4px;
-      padding: 8px 12px;
-      background: var(--bg-dark);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .team-tabs::-webkit-scrollbar { display: none; }
-    .team-tab {
-      padding: 6px 12px;
-      font-size: 0.65rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      background: var(--bg-card);
-      color: var(--text-dim);
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .team-tab.active {
-      background: var(--accent);
-      color: var(--bg-dark);
-    }
-    .team-tab.custom {
-      background: linear-gradient(135deg, var(--purple), #8e44ad);
-      color: white;
-    }
-    .team-tab.custom.active {
-      box-shadow: 0 0 12px rgba(155,89,182,0.5);
-    }
-    
-    /* CONTENT */
-    .content { padding: 0 12px; max-width: 600px; margin: 0 auto; }
-    
-    /* MATCH CARD - Pro Style */
-    .match-card {
-      background: var(--bg-card);
-      border-radius: 8px;
-      margin-bottom: 8px;
-      overflow: hidden;
-      border-left: 3px solid var(--accent);
-      transition: transform 0.15s;
-    }
-    .match-card:active { transform: scale(0.98); }
-    .match-card.uit { border-left-color: var(--red); }
-    .match-card.vrij { border-left-color: #666; opacity: 0.6; }
-    .match-card.past { opacity: 0.5; }
-    
-    .match-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 10px;
-      background: rgba(0,0,0,0.3);
-    }
-    .match-date { font-size: 0.6rem; color: var(--text-dim); font-weight: 500; }
-    .match-badge {
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 0.55rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .match-badge.thuis { background: var(--accent); color: var(--bg-dark); }
-    .match-badge.uit { background: var(--red); color: white; }
-    .match-badge.vrij { background: #666; color: white; }
-    
-    .match-teams {
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .team-logo {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, #1a2435, #0d1420);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 700;
-      border: 2px solid var(--border);
-    }
-    .team-logo.home { border-color: var(--accent); }
-    .team-info { flex: 1; }
-    .team-name { font-size: 0.8rem; font-weight: 700; }
-    .team-detail { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
-    
-    .match-vs {
-      font-size: 0.6rem;
-      color: var(--text-dim);
-      font-weight: 700;
-      padding: 0 6px;
-    }
-    
-    .match-score {
-      text-align: center;
-      min-width: 50px;
-    }
-    .score-display {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: var(--accent);
-      letter-spacing: 2px;
-    }
-    .score-display.loss { color: var(--red); }
-    .score-display.draw { color: var(--gold); }
-    .match-time {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    
-    .match-footer {
-      padding: 6px 10px;
-      background: rgba(0,0,0,0.2);
-      display: flex;
-      gap: 10px;
-      font-size: 0.6rem;
-      color: var(--text-dim);
-    }
-    .match-footer span { display: flex; align-items: center; gap: 3px; }
-    
-    /* SECTION */
-    .section-title {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--accent);
-      margin: 14px 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    
-    /* PLAYERS GRID - Compact */
-    .players-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-    .player-card {
-      background: var(--bg-card);
-      border-radius: 6px;
-      padding: 8px 4px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1px solid transparent;
-    }
-    .player-card:hover { background: var(--bg-card-hover); }
-    .player-card.selected { border-color: var(--accent); background: var(--accent-dim); }
-    .player-number {
-      font-size: 0.9rem;
-      font-weight: 800;
-      color: var(--accent);
-    }
-    .player-name {
-      font-size: 0.55rem;
-      color: var(--text-dim);
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    /* 8v8 CUSTOM MODE */
-    .custom-mode {
-      background: linear-gradient(135deg, rgba(155,89,182,0.1), rgba(155,89,182,0.05));
-      border: 1px solid rgba(155,89,182,0.3);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-    .custom-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .custom-title { font-size: 0.75rem; font-weight: 700; color: var(--purple); }
-    .custom-count { font-size: 0.65rem; color: var(--text-dim); }
-    
-    .add-player-row {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    .add-player-input {
-      flex: 1;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg-dark);
-      color: white;
-      font-size: 0.75rem;
-      font-family: inherit;
-    }
-    .add-player-input:focus { outline: none; border-color: var(--purple); }
-    .add-player-btn {
-      padding: 8px 12px;
-      background: var(--purple);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    
-    .custom-players {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-    .custom-player {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      background: var(--bg-card);
-      border-radius: 4px;
-      font-size: 0.65rem;
-    }
-    .custom-player .num { color: var(--purple); font-weight: 700; }
-    .custom-player .remove {
-      background: none;
-      border: none;
-      color: var(--red);
-      cursor: pointer;
-      font-size: 0.8rem;
-      padding: 0 2px;
-    }
-    
-    /* FIELD VISUALIZATION */
-    .field-container {
-      background: linear-gradient(180deg, #1a5f2a 0%, #145522 100%);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
-      position: relative;
-      aspect-ratio: 3/2;
-      overflow: hidden;
-    }
-    .field-lines {
-      position: absolute;
-      inset: 8px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 4px;
-    }
-    .field-center {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 40px;
-      height: 40px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-    }
-    .field-center-dot {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 6px;
-      height: 6px;
-      background: rgba(255,255,255,0.3);
-      border-radius: 50%;
-    }
-    .field-halfway {
-      position: absolute;
-      top: 8px;
-      bottom: 8px;
-      left: 50%;
-      width: 2px;
-      background: rgba(255,255,255,0.3);
-    }
-    .field-player {
-      position: absolute;
-      width: 28px;
-      height: 28px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.6rem;
-      font-weight: 700;
-      color: var(--bg-dark);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-      cursor: grab;
-      transition: transform 0.2s;
-    }
-    .field-player:active { cursor: grabbing; transform: scale(1.1); }
-    .field-player.away { background: var(--red); color: white; }
-    
-    /* STATS BAR */
-    .stats-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .stat-item {
-      flex: 1;
-      background: var(--bg-card);
-      border-radius: 6px;
-      padding: 8px;
-      text-align: center;
-    }
-    .stat-value { font-size: 1rem; font-weight: 800; color: var(--accent); }
-    .stat-label { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; }
-    
-    /* BOTTOM NAV - Smaller */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--bg-card);
-      padding: 6px 8px 8px;
-      border-top: 1px solid var(--border);
-      z-index: 100;
-    }
-    .nav-container {
-      display: flex;
-      justify-content: space-around;
-      max-width: 400px;
-      margin: 0 auto;
-    }
-    .nav-item {
-      background: transparent;
-      border: none;
-      padding: 4px 8px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      color: var(--text-dim);
-      font-family: inherit;
-      transition: color 0.2s;
-    }
-    .nav-item.active { color: var(--accent); }
-    .nav-icon { font-size: 1rem; }
-    .nav-label { font-size: 0.5rem; font-weight: 600; }
-    
-    /* TAB CONTENT */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    
-    /* TRAINING COMPACT */
-    .training-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      background: var(--bg-card);
-      border-radius: 6px;
-      margin-bottom: 6px;
-    }
-    .training-day {
-      background: var(--accent);
-      color: var(--bg-dark);
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-weight: 800;
-      font-size: 0.7rem;
-    }
-    .training-info { flex: 1; }
-    .training-title { font-size: 0.75rem; font-weight: 600; }
-    .training-time { font-size: 0.6rem; color: var(--text-dim); }
-    
-    /* FORMATION SELECTOR */
-    .formation-selector {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-    .formation-btn {
-      padding: 6px 10px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text-dim);
-      font-size: 0.6rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .formation-btn.active {
-      background: var(--accent-dim);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    
-    /* EMPTY STATE */
-    .empty-state {
-      text-align: center;
-      padding: 30px;
-      color: var(--text-dim);
-    }
-    .empty-state .icon { font-size: 2rem; margin-bottom: 8px; }
-    .empty-state p { font-size: 0.75rem; }
-    
-    /* BUTTON SMALL */
-    .btn-sm {
-      padding: 6px 10px;
-      font-size: 0.6rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .btn-primary { background: var(--accent); color: var(--bg-dark); }
-    .btn-secondary { background: var(--bg-card-hover); color: var(--text); }
-    
-    /* LINEUP */
-    .lineup-section { margin-bottom: 16px; }
-    .lineup-row {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .lineup-player {
-      background: var(--bg-card);
-      border-radius: 6px;
-      padding: 6px 8px;
-      text-align: center;
-      min-width: 50px;
-    }
-    .lineup-player .num { font-size: 0.8rem; font-weight: 800; color: var(--accent); }
-    .lineup-player .name { font-size: 0.5rem; color: var(--text-dim); }
-
-    /* QUICK ACTIONS */
-    .quick-actions {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-    .quick-btn {
-      flex: 1;
-      padding: 8px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-size: 0.6rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      font-family: inherit;
-    }
-    .quick-btn:active { background: var(--bg-card-hover); }
-    .quick-btn .icon { font-size: 1rem; display: block; margin-bottom: 2px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JO10 Trainer">
+    <meta name="theme-color" content="#0047AB">
+    <meta name="description" content="VV Hooglanderveen JO10 Trainersapp">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>JO10 Trainer</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #0047AB 0%, #003380 100%);
+            color: #fff; 
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, rgba(255,215,0,0.95) 0%, rgba(255,193,7,0.9) 100%);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .header-logo {
+            width: 36px; height: 36px;
+            background: #0047AB;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .header-text h1 { font-size: 0.85em; color: #0047AB; font-weight: 700; }
+        .header-text p { font-size: 0.7em; color: #003380; }
+        
+        .team-select {
+            display: flex;
+            gap: 6px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .team-btn {
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 600;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .team-btn.active {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.15);
+            color: #FFD700;
+        }
+        .team-btn.mix {
+            background: linear-gradient(135deg, rgba(155,89,182,0.3), rgba(142,68,173,0.2));
+            border-color: rgba(155,89,182,0.5);
+        }
+        .team-btn.mix.active {
+            border-color: #9b59b6;
+            color: #bb8fce;
+        }
+        
+        .opponent-bar {
+            background: rgba(0,0,0,0.25);
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8em;
+        }
+        .opponent-bar label { color: rgba(255,255,255,0.7); }
+        .opponent-bar input {
+            flex: 1;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 6px;
+            color: #FFD700;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .opponent-bar input::placeholder { color: rgba(255,215,0,0.5); }
+        
+        .tabs {
+            display: flex;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 2px solid rgba(255,215,0,0.3);
+        }
+        .tab {
+            flex: 1;
+            padding: 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab.active { 
+            border-bottom-color: #FFD700; 
+            color: #FFD700;
+        }
+        
+        .content { padding: 12px; display: none; max-width: 500px; margin: 0 auto; }
+        .content.active { display: block; }
+        
+        .quarter-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .quarter-tab {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.7);
+            transition: all 0.2s;
+        }
+        .quarter-tab.active {
+            border-color: #FFD700;
+            color: #FFD700;
+            background: rgba(255,215,0,0.1);
+        }
+        
+        /* FORMATIE SELECTOR */
+        .formation-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+        .formation-btn {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .formation-btn.active {
+            border-color: #FFD700;
+            color: #FFD700;
+            background: rgba(255,215,0,0.1);
+        }
+        
+        /* VELD */
+        .field {
+            background: linear-gradient(to bottom, #2d8a2d 0%, #1f6b1f 50%, #2d8a2d 100%);
+            border-radius: 10px;
+            padding: 12px 8px;
+            min-height: 320px;
+            border: 3px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .field::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            background: rgba(255,255,255,0.35);
+        }
+        .field::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-radius: 50%;
+        }
+        
+        .position-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 8px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .position-row.attack { margin-top: 15px; }
+        .position-row.midfield { margin: 35px 0; }
+        .position-row.defense { margin-bottom: 10px; }
+        .position-row.keeper { margin-top: 25px; }
+        
+        .position {
+            background: linear-gradient(135deg, #0047AB 0%, #003380 100%);
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            padding: 6px 4px;
+            min-width: 58px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: transform 0.15s;
+        }
+        .position:active { transform: scale(0.95); }
+        .position.keeper { 
+            background: linear-gradient(135deg, #FFD700 0%, #e6c200 100%);
+            border-color: #0047AB;
+        }
+        .position .pos-label {
+            font-size: 0.55em;
+            color: #FFD700;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .position.keeper .pos-label { color: #0047AB; }
+        .position .player-name {
+            font-size: 0.7em;
+            margin-top: 2px;
+            font-weight: 600;
+            color: #fff;
+            min-height: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .position.keeper .player-name { color: #0047AB; }
+        
+        .bench {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 12px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+        .bench-title {
+            font-size: 0.75em;
+            color: #FFD700;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .bench-players {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .bench-player {
+            background: rgba(255,215,0,0.1);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            border: 1px solid rgba(255,215,0,0.3);
+            font-weight: 500;
+        }
+        
+        /* 8v8 MIX SELECTIE */
+        .mix-section {
+            background: rgba(155,89,182,0.1);
+            border: 1px solid rgba(155,89,182,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .mix-title {
+            font-size: 0.8em;
+            color: #bb8fce;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .mix-players {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .mix-player {
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mix-player.selected {
+            border-color: #9b59b6;
+            background: rgba(155,89,182,0.2);
+            color: #bb8fce;
+        }
+        .mix-player.on-field {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.15);
+            color: #FFD700;
+        }
+        .mix-count {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.6);
+            margin-top: 8px;
+        }
+        
+        /* SCORE */
+        .score-display {
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+        .score-teams {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+        .score-num {
+            font-size: 2em;
+            font-weight: 700;
+            color: #FFD700;
+        }
+        .team-name-score { font-size: 0.8em; max-width: 70px; color: rgba(255,255,255,0.8); }
+        
+        .player-select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .note-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .note-btn {
+            padding: 10px 6px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-weight: 600;
+            font-size: 0.7em;
+            transition: transform 0.15s;
+        }
+        .note-btn:active { transform: scale(0.95); }
+        .note-btn.goal { background: linear-gradient(135deg, #27ae60, #1e8449); color: white; }
+        .note-btn.assist { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .note-btn.good { background: linear-gradient(135deg, #FFD700, #e6c200); color: #003380; }
+        .note-btn.improve { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        .note-btn.injury { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+        .note-btn.other { background: linear-gradient(135deg, #7f8c8d, #6c7a7b); color: white; }
+        .note-btn .icon { font-size: 1.3em; }
+        
+        .opponent-goal-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+        
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .note-item {
+            background: rgba(0,0,0,0.2);
+            padding: 8px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #FFD700;
+            font-size: 0.8em;
+        }
+        .note-item.goal { border-left-color: #27ae60; }
+        .note-item.assist { border-left-color: #3498db; }
+        .note-item.opponent_goal { border-left-color: #e74c3c; }
+        
+        .share-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #FFD700 0%, #e6c200 100%);
+            border: none;
+            border-radius: 8px;
+            color: #003380;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        /* INFO CARDS */
+        .info-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,215,0,0.15);
+        }
+        .info-card h3 { color: #FFD700; margin-bottom: 8px; font-size: 0.9em; }
+        .info-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 0.85em; }
+        .info-label { color: rgba(255,255,255,0.6); }
+        .info-value { color: #FFD700; font-weight: 600; }
+        
+        /* MODALS */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(180deg, #0047AB, #003380);
+            border-radius: 12px;
+            padding: 15px;
+            width: 100%;
+            max-width: 320px;
+            max-height: 70vh;
+            overflow-y: auto;
+            border: 2px solid #FFD700;
+        }
+        .modal-title {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+            color: #FFD700;
+            font-weight: 600;
+        }
+        .modal-players {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .modal-player {
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+            transition: background 0.15s;
+        }
+        .modal-player:active { background: rgba(255,215,0,0.2); }
+        .modal-close {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .modal textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 6px;
+            color: white;
+            min-height: 70px;
+            margin-bottom: 8px;
+            font-family: inherit;
+        }
+        .modal-confirm {
+            width: 100%;
+            padding: 10px;
+            background: #FFD700;
+            border: none;
+            border-radius: 6px;
+            color: #003380;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 6px;
+        }
+        
+        /* PWA */
+        @media (display-mode: standalone) {
+            body { padding-top: env(safe-area-inset-top); }
+        }
+    </style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo">⚽</div>
-    <div class="header-text">
-      <h1>VV Hooglanderveen JO10</h1>
-      <p>Seizoen 25-26 • Fase 3</p>
+    <div class="header">
+        <div class="header-logo">⚽</div>
+        <div class="header-text">
+            <h1>VV Hooglanderveen Trainer</h1>
+            <p>JO10 • Seizoen 25-26</p>
+        </div>
     </div>
-  </div>
-
-  <div class="team-tabs">
-    <button class="team-tab active" data-team="jo10-1">JO10-1</button>
-    <button class="team-tab" data-team="jo10-2">JO10-2</button>
-    <button class="team-tab" data-team="jo10-3">JO10-3</button>
-    <button class="team-tab custom" data-team="custom">⚡ 8v8</button>
-  </div>
-
-  <div class="content">
-    <!-- TEAM VIEW -->
-    <div id="teamView">
-      <div class="stats-bar">
-        <div class="stat-item">
-          <div class="stat-value" id="statWins">3</div>
-          <div class="stat-label">Gewonnen</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="statDraws">1</div>
-          <div class="stat-label">Gelijk</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="statLosses">2</div>
-          <div class="stat-label">Verloren</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="statGoals">12</div>
-          <div class="stat-label">Goals</div>
-        </div>
-      </div>
-
-      <div class="quick-actions">
-        <button class="quick-btn" onclick="switchTab('wedstrijden')">
-          <span class="icon">📅</span>Schema
-        </button>
-        <button class="quick-btn" onclick="switchTab('training')">
-          <span class="icon">🏃</span>Training
-        </button>
-        <button class="quick-btn" onclick="switchTab('opstelling')">
-          <span class="icon">📋</span>Opstelling
-        </button>
-      </div>
-
-      <div class="section-title">Selectie</div>
-      <div class="players-grid" id="playersGrid"></div>
-
-      <div class="section-title">Volgende wedstrijd</div>
-      <div id="nextMatch"></div>
-
-      <div class="section-title">Recente uitslagen</div>
-      <div id="recentMatches"></div>
+    
+    <div class="team-select">
+        <button class="team-btn active" data-team="jo10-1" onclick="selectTeam('jo10-1')">JO10-1</button>
+        <button class="team-btn" data-team="jo10-2" onclick="selectTeam('jo10-2')">JO10-2</button>
+        <button class="team-btn" data-team="jo10-3" onclick="selectTeam('jo10-3')">JO10-3</button>
+        <button class="team-btn mix" data-team="mix" onclick="selectTeam('mix')">⚡ 8v8</button>
     </div>
-
-    <!-- 8v8 CUSTOM MODE -->
-    <div id="customView" style="display:none;">
-      <div class="custom-mode">
-        <div class="custom-header">
-          <span class="custom-title">🎯 8v8 Opstelling</span>
-          <span class="custom-count" id="customCount">0/8 spelers</span>
+    
+    <div class="opponent-bar">
+        <label>vs</label>
+        <input type="text" id="opponentInput" placeholder="Tegenstander..." onchange="updateOpponent()">
+    </div>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="opstelling">📋 Opstelling</div>
+        <div class="tab" data-tab="notities">📝 Notities</div>
+        <div class="tab" data-tab="info">ℹ️ Info</div>
+    </div>
+    
+    <!-- OPSTELLING -->
+    <div class="content active" id="opstelling">
+        <div class="quarter-tabs">
+            <div class="quarter-tab active" data-quarter="1">K1</div>
+            <div class="quarter-tab" data-quarter="2">K2</div>
+            <div class="quarter-tab" data-quarter="3">K3</div>
+            <div class="quarter-tab" data-quarter="4">K4</div>
         </div>
         
-        <div class="add-player-row">
-          <input type="text" class="add-player-input" id="newPlayerInput" placeholder="Naam toevoegen..." maxlength="20">
-          <button class="add-player-btn" onclick="addCustomPlayer()">+ Toevoegen</button>
+        <!-- Formatie selector (alleen bij 8v8) -->
+        <div class="formation-selector" id="formationSelector" style="display:none;">
+            <button class="formation-btn active" data-formation="2-3-2">2-3-2</button>
+            <button class="formation-btn" data-formation="3-2-2">3-2-2</button>
+            <button class="formation-btn" data-formation="2-4-1">2-4-1</button>
+            <button class="formation-btn" data-formation="3-3-1">3-3-1</button>
         </div>
         
-        <div class="custom-players" id="customPlayers"></div>
-      </div>
-
-      <div class="section-title">Formatie</div>
-      <div class="formation-selector">
-        <button class="formation-btn active" data-formation="2-3-2">2-3-2</button>
-        <button class="formation-btn" data-formation="3-2-2">3-2-2</button>
-        <button class="formation-btn" data-formation="2-4-1">2-4-1</button>
-        <button class="formation-btn" data-formation="3-3-1">3-3-1</button>
-      </div>
-
-      <div class="field-container" id="customField">
-        <div class="field-lines"></div>
-        <div class="field-center"></div>
-        <div class="field-center-dot"></div>
-        <div class="field-halfway"></div>
-        <!-- Players will be positioned here -->
-      </div>
-
-      <div class="section-title">Wissel bank</div>
-      <div class="custom-players" id="customBench"></div>
-
-      <div style="margin-top:16px;display:flex;gap:8px;">
-        <button class="btn-sm btn-secondary" onclick="clearCustomPlayers()" style="flex:1;">🗑️ Wissen</button>
-        <button class="btn-sm btn-primary" onclick="shareLineup()" style="flex:1;">📤 Delen</button>
-      </div>
-    </div>
-
-    <!-- TABS -->
-    <div class="tab-content" id="tab-wedstrijden">
-      <div class="section-title">Wedstrijdschema</div>
-      <div id="matchList"></div>
-    </div>
-
-    <div class="tab-content" id="tab-training">
-      <div class="section-title">Trainingen</div>
-      <div class="training-item">
-        <div class="training-day">DI</div>
-        <div class="training-info">
-          <div class="training-title">Teamtraining</div>
-          <div class="training-time">17:45 - 19:00 • Veld 5B</div>
+        <!-- Mix selectie (alleen bij 8v8) -->
+        <div class="mix-section" id="mixSection" style="display:none;">
+            <div class="mix-title">👥 Selecteer spelers (max 10)</div>
+            <div class="mix-players" id="mixPlayers"></div>
+            <div class="mix-count" id="mixCount">0/10 geselecteerd</div>
         </div>
-      </div>
-      <div class="training-item">
-        <div class="training-day">DO</div>
-        <div class="training-info">
-          <div class="training-title">Teamtraining</div>
-          <div class="training-time">17:45 - 19:00 • Veld 5A</div>
+        
+        <div class="field" id="fieldContainer"></div>
+        
+        <div class="bench">
+            <div class="bench-title">🪑 Wissel:</div>
+            <div class="bench-players" id="benchPlayers"></div>
         </div>
-      </div>
-      <div class="training-item" style="border-left:3px solid #e67e22;">
-        <div class="training-day" style="background:#e67e22;color:white;">VR</div>
-        <div class="training-info">
-          <div class="training-title" style="color:#e67e22;">Techniektraining</div>
-          <div class="training-time">17:30 - 18:30 • Veld 1</div>
-        </div>
-      </div>
+        
+        <button class="share-btn" onclick="shareLineup()">📤 Deel opstelling</button>
     </div>
-
-    <div class="tab-content" id="tab-opstelling">
-      <div class="section-title">Basisopstelling</div>
-      <div id="lineupView"></div>
-    </div>
-  </div>
-
-  <div class="bottom-nav">
-    <div class="nav-container">
-      <button class="nav-item active" data-tab="home" onclick="showHome()">
-        <span class="nav-icon">🏠</span>
-        <span class="nav-label">Home</span>
-      </button>
-      <button class="nav-item" data-tab="wedstrijden" onclick="switchTab('wedstrijden')">
-        <span class="nav-icon">📅</span>
-        <span class="nav-label">Schema</span>
-      </button>
-      <button class="nav-item" data-tab="training" onclick="switchTab('training')">
-        <span class="nav-icon">🏃</span>
-        <span class="nav-label">Training</span>
-      </button>
-      <button class="nav-item" data-tab="opstelling" onclick="switchTab('opstelling')">
-        <span class="nav-icon">📋</span>
-        <span class="nav-label">Opstelling</span>
-      </button>
-    </div>
-  </div>
-
-  <script>
-    // Team Data
-    const teams = {
-      'jo10-1': {
-        name: 'JO10-1',
-        klasse: 'Hoofdklasse W1B3',
-        trainer: 'Eric',
-        players: [
-          {nr: 1, name: 'Maurits', pos: 'K'},
-          {nr: 2, name: 'Fedde', pos: 'V'},
-          {nr: 3, name: 'Boas', pos: 'V'},
-          {nr: 4, name: 'Seb', pos: 'M'},
-          {nr: 5, name: 'Dex', pos: 'M'},
-          {nr: 6, name: 'Lenn', pos: 'M'},
-          {nr: 7, name: 'Luuk', pos: 'A'},
-          {nr: 8, name: 'Jesse', pos: 'A'},
-          {nr: 9, name: 'Mats', pos: 'A'},
-          {nr: 10, name: 'Guus', pos: 'M'}
-        ],
-        matches: [
-          {date: '2026-02-15', time: '10:00', opponent: 'VVZA JO10-1', home: true, score: null},
-          {date: '2026-02-08', time: '10:30', opponent: 'BVV JO10-2', home: false, score: '3-1'},
-          {date: '2026-02-01', time: '10:00', opponent: 'Hoevelaken JO10-1', home: true, score: '2-2'},
-          {date: '2026-01-25', time: '11:00', opponent: 'Leusden JO10-3', home: false, score: '1-4'}
-        ],
-        stats: {wins: 3, draws: 1, losses: 2, goals: 12}
-      },
-      'jo10-2': {
-        name: 'JO10-2',
-        klasse: 'Hoofdklasse W1B5',
-        trainer: 'Marco',
-        players: [
-          {nr: 1, name: 'Tim', pos: 'K'},
-          {nr: 2, name: 'Bas', pos: 'V'},
-          {nr: 3, name: 'Lars', pos: 'V'},
-          {nr: 4, name: 'Finn', pos: 'M'},
-          {nr: 5, name: 'Sem', pos: 'M'},
-          {nr: 6, name: 'Tom', pos: 'M'},
-          {nr: 7, name: 'Max', pos: 'A'},
-          {nr: 8, name: 'Noud', pos: 'A'}
-        ],
-        matches: [
-          {date: '2026-02-15', time: '11:30', opponent: 'Nijkerk JO10-4', home: true, score: null},
-          {date: '2026-02-08', time: '09:00', opponent: 'SCH JO10-1', home: false, score: '2-3'}
-        ],
-        stats: {wins: 2, draws: 2, losses: 1, goals: 8}
-      },
-      'jo10-3': {
-        name: 'JO10-3',
-        klasse: '1e Klasse 12',
-        trainer: 'Peter',
-        players: [
-          {nr: 1, name: 'Thijs', pos: 'K'},
-          {nr: 2, name: 'Joep', pos: 'V'},
-          {nr: 3, name: 'Stan', pos: 'V'},
-          {nr: 4, name: 'Ruben', pos: 'M'},
-          {nr: 5, name: 'Daan', pos: 'M'},
-          {nr: 6, name: 'Tijn', pos: 'A'},
-          {nr: 7, name: 'Stijn', pos: 'A'}
-        ],
-        matches: [
-          {date: '2026-02-15', time: '09:00', opponent: 'ACV JO10-5', home: false, score: null}
-        ],
-        stats: {wins: 1, draws: 0, losses: 3, goals: 5}
-      }
-    };
-
-    let currentTeam = 'jo10-1';
-    let customPlayers = JSON.parse(localStorage.getItem('customPlayers') || '[]');
-    let currentFormation = '2-3-2';
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      renderTeam(currentTeam);
-      renderCustomPlayers();
-      setupEventListeners();
-    });
-
-    function setupEventListeners() {
-      // Team tabs
-      document.querySelectorAll('.team-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          document.querySelectorAll('.team-tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          
-          const team = tab.dataset.team;
-          if (team === 'custom') {
-            showCustomView();
-          } else {
-            currentTeam = team;
-            showTeamView();
-            renderTeam(team);
-          }
-        });
-      });
-
-      // Formation buttons
-      document.querySelectorAll('.formation-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.formation-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentFormation = btn.dataset.formation;
-          renderFieldPositions();
-        });
-      });
-
-      // Enter key for adding player
-      document.getElementById('newPlayerInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addCustomPlayer();
-      });
-    }
-
-    function showTeamView() {
-      document.getElementById('teamView').style.display = 'block';
-      document.getElementById('customView').style.display = 'none';
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      showHome();
-    }
-
-    function showCustomView() {
-      document.getElementById('teamView').style.display = 'none';
-      document.getElementById('customView').style.display = 'block';
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      renderCustomPlayers();
-      renderFieldPositions();
-    }
-
-    function showHome() {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.getElementById('teamView').style.display = 'block';
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.querySelector('[data-tab="home"]').classList.add('active');
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.getElementById('tab-' + tab)?.classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
-      
-      if (tab === 'opstelling') renderLineup();
-      if (tab === 'wedstrijden') renderAllMatches();
-    }
-
-    function renderTeam(teamId) {
-      const team = teams[teamId];
-      if (!team) return;
-
-      // Stats
-      document.getElementById('statWins').textContent = team.stats.wins;
-      document.getElementById('statDraws').textContent = team.stats.draws;
-      document.getElementById('statLosses').textContent = team.stats.losses;
-      document.getElementById('statGoals').textContent = team.stats.goals;
-
-      // Players
-      const playersGrid = document.getElementById('playersGrid');
-      playersGrid.innerHTML = team.players.map(p => `
-        <div class="player-card" data-nr="${p.nr}">
-          <div class="player-number">${p.nr}</div>
-          <div class="player-name">${p.name}</div>
-        </div>
-      `).join('');
-
-      // Next match
-      const nextMatch = team.matches.find(m => !m.score);
-      const nextMatchEl = document.getElementById('nextMatch');
-      if (nextMatch) {
-        nextMatchEl.innerHTML = renderMatchCard(nextMatch);
-      } else {
-        nextMatchEl.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>Geen wedstrijden gepland</p></div>';
-      }
-
-      // Recent matches
-      const recentMatches = team.matches.filter(m => m.score).slice(0, 3);
-      const recentEl = document.getElementById('recentMatches');
-      recentEl.innerHTML = recentMatches.map(m => renderMatchCard(m)).join('');
-    }
-
-    function renderMatchCard(match) {
-      const date = new Date(match.date);
-      const dateStr = date.toLocaleDateString('nl-NL', {weekday: 'short', day: 'numeric', month: 'short'});
-      const isPast = match.score !== null;
-      const isHome = match.home;
-      
-      let scoreClass = '';
-      if (match.score) {
-        const [home, away] = match.score.split('-').map(Number);
-        const ourScore = isHome ? home : away;
-        const theirScore = isHome ? away : home;
-        if (ourScore > theirScore) scoreClass = '';
-        else if (ourScore < theirScore) scoreClass = 'loss';
-        else scoreClass = 'draw';
-      }
-
-      return `
-        <div class="match-card ${isHome ? 'thuis' : 'uit'} ${isPast ? 'past' : ''}">
-          <div class="match-header">
-            <span class="match-date">${dateStr}</span>
-            <span class="match-badge ${isHome ? 'thuis' : 'uit'}">${isHome ? 'THUIS' : 'UIT'}</span>
-          </div>
-          <div class="match-teams">
-            <div class="team-logo ${isHome ? 'home' : ''}">VVH</div>
-            <div class="team-info">
-              <div class="team-name">${isHome ? 'VV Hooglanderveen' : match.opponent}</div>
-              <div class="team-detail">${teams[currentTeam].name}</div>
+    
+    <!-- NOTITIES -->
+    <div class="content" id="notities">
+        <div class="score-display">
+            <div class="score-teams">
+                <span class="team-name-score" id="homeTeam">VVH</span>
+                <span class="score-num" id="scoreHome">0</span>
+                <span style="opacity:0.5">-</span>
+                <span class="score-num" id="scoreAway">0</span>
+                <span class="team-name-score" id="awayTeam">TEG</span>
             </div>
-            <div class="match-vs">vs</div>
-            <div class="team-info" style="text-align:right;">
-              <div class="team-name">${isHome ? match.opponent : 'VV Hooglanderveen'}</div>
-              <div class="team-detail">${isHome ? '' : teams[currentTeam].name}</div>
-            </div>
-            <div class="team-logo ${!isHome ? 'home' : ''}">${match.opponent.substring(0,3).toUpperCase()}</div>
-          </div>
-          <div class="match-score">
-            ${match.score 
-              ? `<div class="score-display ${scoreClass}">${match.score}</div>`
-              : `<div class="match-time">${match.time}</div>`
+        </div>
+        
+        <select class="player-select" id="notePlayer">
+            <option value="">-- Speler --</option>
+        </select>
+        
+        <div class="note-buttons">
+            <button class="note-btn goal" onclick="addNote('goal')"><span class="icon">⚽</span>Goal</button>
+            <button class="note-btn assist" onclick="addNote('assist')"><span class="icon">👟</span>Assist</button>
+            <button class="note-btn good" onclick="addNote('good')"><span class="icon">⭐</span>Goed</button>
+            <button class="note-btn improve" onclick="addNote('improve')"><span class="icon">📈</span>Beter</button>
+            <button class="note-btn injury" onclick="addNote('injury')"><span class="icon">🏥</span>Blessure</button>
+            <button class="note-btn other" onclick="addNote('other')"><span class="icon">📝</span>Anders</button>
+        </div>
+        
+        <button class="opponent-goal-btn" onclick="addOpponentGoal()">🥅 Tegendoelpunt</button>
+        
+        <div class="notes-list" id="notesList"></div>
+    </div>
+    
+    <!-- INFO -->
+    <div class="content" id="info">
+        <div class="info-card">
+            <h3>📋 Wedstrijd</h3>
+            <div class="info-row"><span class="info-label">Tegenstander:</span><span class="info-value" id="infoOpponent">-</span></div>
+            <div class="info-row"><span class="info-label">Formatie:</span><span class="info-value" id="infoFormation">2-3-1</span></div>
+        </div>
+        <div class="info-card">
+            <h3>👥 Team</h3>
+            <div class="info-row"><span class="info-label">Team:</span><span class="info-value" id="infoTeamName">-</span></div>
+            <div class="info-row"><span class="info-label">Trainer:</span><span class="info-value" id="infoTrainer">-</span></div>
+            <div class="info-row"><span class="info-label">Manager:</span><span class="info-value" id="infoManager">-</span></div>
+            <div class="info-row"><span class="info-label">Spelers:</span><span class="info-value" id="infoPlayers">-</span></div>
+        </div>
+    </div>
+    
+    <!-- MODALS -->
+    <div class="modal" id="playerModal">
+        <div class="modal-content">
+            <div class="modal-title">Selecteer voor <span id="modalPosition"></span></div>
+            <div class="modal-players" id="modalPlayers"></div>
+            <button class="modal-close" onclick="closeModal()">Annuleren</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <div class="modal-title" id="noteModalTitle">Notitie</div>
+            <textarea id="noteText" placeholder="Toelichting..."></textarea>
+            <button class="modal-confirm" onclick="confirmNote()">✓ Opslaan</button>
+            <button class="modal-close" onclick="closeNoteModal()">Annuleren</button>
+        </div>
+    </div>
+
+    <script>
+        // Team data
+        const teams = {
+            'jo10-1': {
+                naam: 'JO10-1', klasse: 'Hoofdklasse W1B3', trainer: 'Eric', manager: 'Dominique & Mark',
+                spelers: ['Mees V.', 'Liam', 'Jairo', 'Yaer', 'Jeftha', 'Mees R.', 'Philine', 'Xander']
+            },
+            'jo10-2': {
+                naam: 'JO10-2', klasse: 'Hoofdklasse W1B5', trainer: 'Ryan', manager: 'Stefan',
+                spelers: ['Fedde', 'Tian', 'Vince', 'Dex', 'Mees L.', 'James', 'Mert', 'Teije']
+            },
+            'jo10-3': {
+                naam: 'JO10-3', klasse: '1e Klasse 12', trainer: 'Gigi & Niels', manager: 'Hassan',
+                spelers: ['Younes', 'Zayn', 'Siem', 'Freek', 'Morris', 'Seb', 'Job', 'Maud']
+            },
+            'mix': {
+                naam: '8v8 Mix', klasse: 'Vrije selectie', trainer: '-', manager: '-',
+                spelers: [] // Dynamisch gevuld
             }
-          </div>
-        </div>
-      `;
-    }
-
-    function renderAllMatches() {
-      const team = teams[currentTeam];
-      document.getElementById('matchList').innerHTML = team.matches.map(m => renderMatchCard(m)).join('');
-    }
-
-    function renderLineup() {
-      const team = teams[currentTeam];
-      const players = team.players;
-      
-      // Simple 2-3-2 formation visualization
-      const lineup = `
-        <div class="lineup-section">
-          <div class="lineup-row">
-            ${players.filter(p => p.pos === 'A').map(p => `
-              <div class="lineup-player">
-                <div class="num">${p.nr}</div>
-                <div class="name">${p.name}</div>
-              </div>
-            `).join('')}
-          </div>
-          <div class="lineup-row">
-            ${players.filter(p => p.pos === 'M').map(p => `
-              <div class="lineup-player">
-                <div class="num">${p.nr}</div>
-                <div class="name">${p.name}</div>
-              </div>
-            `).join('')}
-          </div>
-          <div class="lineup-row">
-            ${players.filter(p => p.pos === 'V').map(p => `
-              <div class="lineup-player">
-                <div class="num">${p.nr}</div>
-                <div class="name">${p.name}</div>
-              </div>
-            `).join('')}
-          </div>
-          <div class="lineup-row">
-            ${players.filter(p => p.pos === 'K').map(p => `
-              <div class="lineup-player">
-                <div class="num">${p.nr}</div>
-                <div class="name">${p.name}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      document.getElementById('lineupView').innerHTML = lineup;
-    }
-
-    // 8v8 Custom Functions
-    function addCustomPlayer() {
-      const input = document.getElementById('newPlayerInput');
-      const name = input.value.trim();
-      if (!name || customPlayers.length >= 16) return;
-      
-      customPlayers.push({
-        id: Date.now(),
-        name: name,
-        nr: customPlayers.length + 1
-      });
-      
-      localStorage.setItem('customPlayers', JSON.stringify(customPlayers));
-      input.value = '';
-      renderCustomPlayers();
-      renderFieldPositions();
-    }
-
-    function removeCustomPlayer(id) {
-      customPlayers = customPlayers.filter(p => p.id !== id);
-      // Renumber
-      customPlayers.forEach((p, i) => p.nr = i + 1);
-      localStorage.setItem('customPlayers', JSON.stringify(customPlayers));
-      renderCustomPlayers();
-      renderFieldPositions();
-    }
-
-    function renderCustomPlayers() {
-      const container = document.getElementById('customPlayers');
-      const count = document.getElementById('customCount');
-      
-      count.textContent = `${Math.min(customPlayers.length, 8)}/8 spelers`;
-      
-      container.innerHTML = customPlayers.map(p => `
-        <div class="custom-player">
-          <span class="num">${p.nr}</span>
-          <span>${p.name}</span>
-          <button class="remove" onclick="removeCustomPlayer(${p.id})">×</button>
-        </div>
-      `).join('');
-
-      // Bench (players 9+)
-      const bench = document.getElementById('customBench');
-      const benchPlayers = customPlayers.slice(8);
-      bench.innerHTML = benchPlayers.length 
-        ? benchPlayers.map(p => `
-            <div class="custom-player">
-              <span class="num">${p.nr}</span>
-              <span>${p.name}</span>
-            </div>
-          `).join('')
-        : '<div style="color:var(--text-dim);font-size:0.7rem;">Voeg meer dan 8 spelers toe voor wissels</div>';
-    }
-
-    function renderFieldPositions() {
-      const field = document.getElementById('customField');
-      // Remove old players
-      field.querySelectorAll('.field-player').forEach(p => p.remove());
-      
-      const activePlayers = customPlayers.slice(0, 8);
-      const positions = getFormationPositions(currentFormation);
-      
-      activePlayers.forEach((player, i) => {
-        if (i >= positions.length) return;
-        const pos = positions[i];
-        const el = document.createElement('div');
-        el.className = 'field-player';
-        el.textContent = player.nr;
-        el.style.left = pos.x + '%';
-        el.style.top = pos.y + '%';
-        el.style.transform = 'translate(-50%, -50%)';
-        el.title = player.name;
-        field.appendChild(el);
-      });
-    }
-
-    function getFormationPositions(formation) {
-      const formations = {
-        '2-3-2': [
-          {x: 50, y: 85}, // GK
-          {x: 30, y: 70}, {x: 70, y: 70}, // DEF
-          {x: 25, y: 50}, {x: 50, y: 45}, {x: 75, y: 50}, // MID
-          {x: 35, y: 25}, {x: 65, y: 25} // ATT
-        ],
-        '3-2-2': [
-          {x: 50, y: 85},
-          {x: 25, y: 70}, {x: 50, y: 65}, {x: 75, y: 70},
-          {x: 35, y: 45}, {x: 65, y: 45},
-          {x: 35, y: 25}, {x: 65, y: 25}
-        ],
-        '2-4-1': [
-          {x: 50, y: 85},
-          {x: 30, y: 70}, {x: 70, y: 70},
-          {x: 20, y: 48}, {x: 40, y: 45}, {x: 60, y: 45}, {x: 80, y: 48},
-          {x: 50, y: 22}
-        ],
-        '3-3-1': [
-          {x: 50, y: 85},
-          {x: 25, y: 68}, {x: 50, y: 65}, {x: 75, y: 68},
-          {x: 25, y: 42}, {x: 50, y: 40}, {x: 75, y: 42},
-          {x: 50, y: 20}
-        ]
-      };
-      return formations[formation] || formations['2-3-2'];
-    }
-
-    function clearCustomPlayers() {
-      if (confirm('Alle spelers verwijderen?')) {
-        customPlayers = [];
-        localStorage.setItem('customPlayers', JSON.stringify(customPlayers));
-        renderCustomPlayers();
-        renderFieldPositions();
-      }
-    }
-
-    function shareLineup() {
-      const activePlayers = customPlayers.slice(0, 8);
-      if (activePlayers.length === 0) {
-        alert('Voeg eerst spelers toe!');
-        return;
-      }
-      
-      const text = `⚽ 8v8 Opstelling (${currentFormation})\n\n` +
-        activePlayers.map(p => `${p.nr}. ${p.name}`).join('\n') +
-        (customPlayers.length > 8 ? `\n\n🪑 Wissel:\n` + customPlayers.slice(8).map(p => `${p.nr}. ${p.name}`).join('\n') : '');
-      
-      if (navigator.share) {
-        navigator.share({title: '8v8 Opstelling', text: text});
-      } else {
-        navigator.clipboard.writeText(text);
-        alert('Opstelling gekopieerd!');
-      }
-    }
-
-    // Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('SW registered'))
-          .catch(err => console.log('SW registration failed:', err));
-      });
-    }
-  </script>
+        };
+        
+        // Alle JO10 spelers voor mix
+        const allPlayers = [
+            ...teams['jo10-1'].spelers,
+            ...teams['jo10-2'].spelers,
+            ...teams['jo10-3'].spelers
+        ];
+        
+        // Formaties: positie codes en hun veld posities (relatief %)
+        const formations = {
+            '2-3-1': { // Standaard voor teams
+                positions: ['K', 'LV', 'RV', 'LM', 'CM', 'RM', 'SP'],
+                layout: {
+                    attack: ['SP'],
+                    midfield: ['LM', 'CM', 'RM'],
+                    defense: ['LV', 'RV'],
+                    keeper: ['K']
+                }
+            },
+            '2-3-2': {
+                positions: ['K', 'LV', 'RV', 'LM', 'CM', 'RM', 'LA', 'RA'],
+                layout: {
+                    attack: ['LA', 'RA'],
+                    midfield: ['LM', 'CM', 'RM'],
+                    defense: ['LV', 'RV'],
+                    keeper: ['K']
+                }
+            },
+            '3-2-2': {
+                positions: ['K', 'LV', 'CV', 'RV', 'LM', 'RM', 'LA', 'RA'],
+                layout: {
+                    attack: ['LA', 'RA'],
+                    midfield: ['LM', 'RM'],
+                    defense: ['LV', 'CV', 'RV'],
+                    keeper: ['K']
+                }
+            },
+            '2-4-1': {
+                positions: ['K', 'LV', 'RV', 'LM', 'LCM', 'RCM', 'RM', 'SP'],
+                layout: {
+                    attack: ['SP'],
+                    midfield: ['LM', 'LCM', 'RCM', 'RM'],
+                    defense: ['LV', 'RV'],
+                    keeper: ['K']
+                }
+            },
+            '3-3-1': {
+                positions: ['K', 'LV', 'CV', 'RV', 'LM', 'CM', 'RM', 'SP'],
+                layout: {
+                    attack: ['SP'],
+                    midfield: ['LM', 'CM', 'RM'],
+                    defense: ['LV', 'CV', 'RV'],
+                    keeper: ['K']
+                }
+            }
+        };
+        
+        let currentTeam = 'jo10-1';
+        let currentQuarter = 1;
+        let currentFormation = '2-3-1';
+        let selectedPosition = null;
+        let pendingNote = null;
+        let mixSelected = JSON.parse(localStorage.getItem('jo10_mix_selected') || '[]');
+        
+        // Per team storage keys
+        function getKey(suffix) { return `jo10trainer_${currentTeam}_${suffix}`; }
+        
+        function getLineup() {
+            return JSON.parse(localStorage.getItem(getKey('lineup'))) || createEmptyLineup();
+        }
+        function setLineup(data) {
+            localStorage.setItem(getKey('lineup'), JSON.stringify(data));
+        }
+        function getNotes() {
+            return JSON.parse(localStorage.getItem(getKey('notes'))) || [];
+        }
+        function setNotes(data) {
+            localStorage.setItem(getKey('notes'), JSON.stringify(data));
+        }
+        function getMatch() {
+            return JSON.parse(localStorage.getItem(getKey('match'))) || { opponent: '', scoreHome: 0, scoreAway: 0 };
+        }
+        function setMatch(data) {
+            localStorage.setItem(getKey('match'), JSON.stringify(data));
+        }
+        
+        function createEmptyLineup() {
+            const f = formations[currentFormation];
+            const empty = {};
+            f.positions.forEach(p => empty[p] = '');
+            return { 1: {...empty}, 2: {...empty}, 3: {...empty}, 4: {...empty} };
+        }
+        
+        function selectTeam(teamId) {
+            currentTeam = teamId;
+            document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-team="${teamId}"]`).classList.add('active');
+            
+            // Show/hide mix elements
+            const isMix = teamId === 'mix';
+            document.getElementById('formationSelector').style.display = isMix ? 'flex' : 'none';
+            document.getElementById('mixSection').style.display = isMix ? 'block' : 'none';
+            
+            if (isMix) {
+                currentFormation = localStorage.getItem('jo10_mix_formation') || '2-3-2';
+                updateFormationButtons();
+                renderMixPlayers();
+                teams.mix.spelers = mixSelected;
+            } else {
+                currentFormation = '2-3-1';
+            }
+            
+            updateUI();
+        }
+        
+        function updateFormationButtons() {
+            document.querySelectorAll('.formation-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.formation === currentFormation);
+            });
+        }
+        
+        function renderMixPlayers() {
+            const container = document.getElementById('mixPlayers');
+            container.innerHTML = allPlayers.map(p => {
+                const selected = mixSelected.includes(p);
+                return `<div class="mix-player ${selected ? 'selected' : ''}" onclick="toggleMixPlayer('${p}')">${p}</div>`;
+            }).join('');
+            document.getElementById('mixCount').textContent = `${mixSelected.length}/10 geselecteerd`;
+        }
+        
+        function toggleMixPlayer(name) {
+            if (mixSelected.includes(name)) {
+                mixSelected = mixSelected.filter(p => p !== name);
+            } else if (mixSelected.length < 10) {
+                mixSelected.push(name);
+            }
+            localStorage.setItem('jo10_mix_selected', JSON.stringify(mixSelected));
+            teams.mix.spelers = mixSelected;
+            renderMixPlayers();
+            renderLineup();
+        }
+        
+        function updateOpponent() {
+            const match = getMatch();
+            match.opponent = document.getElementById('opponentInput').value;
+            setMatch(match);
+            updateUI();
+        }
+        
+        function updateUI() {
+            const team = teams[currentTeam];
+            const match = getMatch();
+            
+            document.getElementById('opponentInput').value = match.opponent || '';
+            document.getElementById('homeTeam').textContent = team.naam;
+            document.getElementById('awayTeam').textContent = (match.opponent || 'TEG').split(' ')[0].substring(0, 6);
+            document.getElementById('scoreHome').textContent = match.scoreHome || 0;
+            document.getElementById('scoreAway').textContent = match.scoreAway || 0;
+            
+            // Info tab
+            document.getElementById('infoTeamName').textContent = team.naam;
+            document.getElementById('infoTrainer').textContent = team.trainer;
+            document.getElementById('infoManager').textContent = team.manager;
+            document.getElementById('infoPlayers').textContent = team.spelers.length;
+            document.getElementById('infoOpponent').textContent = match.opponent || '-';
+            document.getElementById('infoFormation').textContent = currentFormation;
+            
+            // Player select
+            const select = document.getElementById('notePlayer');
+            select.innerHTML = '<option value="">-- Speler --</option>' +
+                team.spelers.map(p => `<option value="${p}">${p}</option>`).join('');
+            
+            renderField();
+            renderLineup();
+            renderNotes();
+        }
+        
+        function renderField() {
+            const f = formations[currentFormation];
+            const container = document.getElementById('fieldContainer');
+            
+            let html = '';
+            ['attack', 'midfield', 'defense', 'keeper'].forEach(row => {
+                const positions = f.layout[row];
+                if (positions.length > 0) {
+                    html += `<div class="position-row ${row}">`;
+                    positions.forEach(pos => {
+                        const isKeeper = pos === 'K';
+                        html += `
+                            <div class="position ${isKeeper ? 'keeper' : ''}" onclick="selectPosition('${pos}')">
+                                <div class="pos-label">${pos}</div>
+                                <div class="player-name" id="pos-${pos}">-</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function renderLineup() {
+            const lineup = getLineup();
+            const q = lineup[currentQuarter] || {};
+            const team = teams[currentTeam];
+            const f = formations[currentFormation];
+            
+            f.positions.forEach(pos => {
+                const el = document.getElementById(`pos-${pos}`);
+                if (el) el.textContent = q[pos] || '-';
+            });
+            
+            const onField = Object.values(q).filter(p => p);
+            const bench = team.spelers.filter(p => !onField.includes(p));
+            document.getElementById('benchPlayers').innerHTML = bench.length > 0 
+                ? bench.map(p => `<div class="bench-player">${p}</div>`).join('')
+                : '<span style="color:rgba(255,255,255,0.4);font-size:0.8em;">Iedereen op veld</span>';
+        }
+        
+        function renderNotes() {
+            const notes = getNotes();
+            const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅' };
+            document.getElementById('notesList').innerHTML = notes.map(n => `
+                <div class="note-item ${n.type}">
+                    <strong>${icons[n.type] || '📝'} ${n.player || ''}</strong> <small style="opacity:0.6">K${n.quarter} ${n.time}</small>
+                    ${n.text ? `<br><span style="color:rgba(255,255,255,0.6)">${n.text}</span>` : ''}
+                </div>
+            `).join('') || '<p style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.85em">Geen notities</p>';
+        }
+        
+        // Quarter tabs
+        document.querySelectorAll('.quarter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.quarter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentQuarter = parseInt(tab.dataset.quarter);
+                renderLineup();
+            });
+        });
+        
+        // Main tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // Formation buttons
+        document.querySelectorAll('.formation-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentFormation = btn.dataset.formation;
+                localStorage.setItem('jo10_mix_formation', currentFormation);
+                updateFormationButtons();
+                renderField();
+                
+                // Reset lineup for new formation
+                const lineup = createEmptyLineup();
+                setLineup(lineup);
+                renderLineup();
+                document.getElementById('infoFormation').textContent = currentFormation;
+            });
+        });
+        
+        function selectPosition(pos) {
+            selectedPosition = pos;
+            document.getElementById('modalPosition').textContent = pos;
+            
+            const team = teams[currentTeam];
+            const lineup = getLineup();
+            const currentPlayers = Object.values(lineup[currentQuarter] || {});
+            const available = team.spelers.filter(p => !currentPlayers.includes(p) || lineup[currentQuarter][pos] === p);
+            
+            document.getElementById('modalPlayers').innerHTML = `
+                <div class="modal-player" onclick="assignPlayer('')">- Leeg -</div>
+                ${available.map(p => `<div class="modal-player" onclick="assignPlayer('${p}')">${p}</div>`).join('')}
+            `;
+            document.getElementById('playerModal').classList.add('active');
+        }
+        
+        function assignPlayer(name) {
+            const lineup = getLineup();
+            if (!lineup[currentQuarter]) lineup[currentQuarter] = {};
+            lineup[currentQuarter][selectedPosition] = name;
+            setLineup(lineup);
+            renderLineup();
+            closeModal();
+        }
+        
+        function closeModal() {
+            document.getElementById('playerModal').classList.remove('active');
+        }
+        
+        function addNote(type) {
+            const player = document.getElementById('notePlayer').value;
+            if (!player && type !== 'other') { alert('Selecteer eerst een speler'); return; }
+            pendingNote = { type, player };
+            const titles = { goal:'⚽ Goal', assist:'👟 Assist', injury:'🏥 Blessure', good:'⭐ Goed moment', improve:'📈 Aandachtspunt', other:'📝 Notitie' };
+            document.getElementById('noteModalTitle').textContent = titles[type] + (player ? ` - ${player}` : '');
+            document.getElementById('noteText').value = '';
+            document.getElementById('noteModal').classList.add('active');
+        }
+        
+        function confirmNote() {
+            const notes = getNotes();
+            const note = {
+                ...pendingNote,
+                text: document.getElementById('noteText').value,
+                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
+                quarter: currentQuarter
+            };
+            notes.unshift(note);
+            setNotes(notes);
+            
+            if (note.type === 'goal') {
+                const match = getMatch();
+                match.scoreHome = (match.scoreHome || 0) + 1;
+                setMatch(match);
+                document.getElementById('scoreHome').textContent = match.scoreHome;
+            }
+            
+            renderNotes();
+            closeNoteModal();
+        }
+        
+        function addOpponentGoal() {
+            const match = getMatch();
+            match.scoreAway = (match.scoreAway || 0) + 1;
+            setMatch(match);
+            document.getElementById('scoreAway').textContent = match.scoreAway;
+            
+            const notes = getNotes();
+            notes.unshift({
+                type: 'opponent_goal',
+                player: 'Tegenstander',
+                text: '',
+                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
+                quarter: currentQuarter
+            });
+            setNotes(notes);
+            renderNotes();
+        }
+        
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.remove('active');
+        }
+        
+        function shareLineup() {
+            const team = teams[currentTeam];
+            const match = getMatch();
+            const lineup = getLineup();
+            
+            let text = `⚽ ${team.naam} vs ${match.opponent || '?'}\n`;
+            text += `📊 Formatie: ${currentFormation}\n\n`;
+            
+            for (let q = 1; q <= 4; q++) {
+                const l = lineup[q] || {};
+                const players = Object.entries(l).filter(([k,v]) => v).map(([k,v]) => `${k}:${v}`).join(' | ');
+                const onField = Object.values(l).filter(p => p);
+                const bench = team.spelers.filter(p => !onField.includes(p));
+                text += `📋 K${q}: ${players || '-'}\n`;
+                if (bench.length) text += `   🪑 ${bench.join(', ')}\n`;
+            }
+            
+            if (navigator.share) {
+                navigator.share({ title: `${team.naam} Opstelling`, text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Gekopieerd naar klembord!');
+            }
+        }
+        
+        // Init
+        updateUI();
+        
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
 </body>
 </html>

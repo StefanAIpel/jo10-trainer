@@ -4,8 +4,8 @@
   "description": "VV Hooglanderveen JO10 Trainersapp",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0f1a",
-  "theme_color": "#0a0f1a",
+  "background_color": "#0047AB",
+  "theme_color": "#0047AB",
   "orientation": "portrait",
   "icons": [
     {
