@@ -272,12 +272,51 @@
             text-overflow: ellipsis;
         }
         .position.keeper .player-name { color: #0047AB; }
-        .position.double-duty {
+        .position.no-rest {
             background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
             border-color: #bb8fce;
         }
-        .position.double-duty .pos-label { color: #e8daef; }
-        .position.double-duty .player-name { color: #fff; }
+        .position.no-rest .pos-label { color: #e8daef; }
+        .position.no-rest .player-name { color: #fff; }
+        
+        /* Afwezig toggle */
+        .absent-section {
+            background: rgba(231,76,60,0.1);
+            border: 1px solid rgba(231,76,60,0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .absent-title {
+            font-size: 0.75em;
+            color: #e74c3c;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .absent-players {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .absent-toggle {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.8);
+            transition: all 0.2s;
+        }
+        .absent-toggle.absent {
+            background: rgba(231,76,60,0.3);
+            border-color: #e74c3c;
+            color: #ff6b6b;
+            text-decoration: line-through;
+        }
         
         .bench {
             background: rgba(0,0,0,0.2);
@@ -834,6 +873,12 @@
             <div class="quarter-tab" data-quarter="4">K4</div>
         </div>
         
+        <!-- Afwezig markeren -->
+        <div class="absent-section">
+            <div class="absent-title">🏥 Afwezig (tik om te wisselen)</div>
+            <div class="absent-players" id="absentPlayers"></div>
+        </div>
+        
         <!-- Auto opstelling knoppen -->
         <div style="display:flex;gap:8px;margin-bottom:12px;">
             <button class="auto-btn" style="flex:1;margin:0;" onclick="autoFillLineup()">🔄 Auto</button>
@@ -1001,6 +1046,16 @@
         let mixSelected = JSON.parse(localStorage.getItem('jo10_mix_selected') || '[]');
         let firebaseConnected = false;
         
+        // Afwezige spelers per team
+        function getAbsent() { return getData('absent', []); }
+        function setAbsent(data) { setData('absent', data); }
+        
+        function getAvailablePlayers() {
+            const team = teams[currentTeam];
+            const absent = getAbsent();
+            return team.spelers.filter(p => !absent.includes(p));
+        }
+        
         // Firebase paths
         function fbPath(suffix) { return `trainer/${currentTeam}/${suffix}`; }
         
@@ -1071,12 +1126,12 @@
         
         // AUTO OPSTELLING
         function autoFillLineup() {
-            const team = teams[currentTeam];
             const f = formations[currentFormation];
             const lineup = getLineup();
+            const available = getAvailablePlayers();
             
-            // Shuffle spelers
-            const shuffled = [...team.spelers].sort(() => Math.random() - 0.5);
+            // Shuffle beschikbare spelers
+            const shuffled = [...available].sort(() => Math.random() - 0.5);
             
             // Vul posities voor dit kwart
             const quarterLineup = {};
@@ -1158,8 +1213,9 @@
             document.getElementById('infoFormation').textContent = currentFormation;
             
             const select = document.getElementById('notePlayer');
+            const availableForNotes = getAvailablePlayers();
             select.innerHTML = '<option value="">-- Speler --</option>' +
-                team.spelers.map(p => `<option value="${p}">${p}</option>`).join('');
+                availableForNotes.map(p => `<option value="${p}">${p}</option>`).join('');
             
             renderField();
             renderLineup();
@@ -1196,28 +1252,40 @@
             const q = lineup[currentQuarter] || {};
             const team = teams[currentTeam];
             const f = formations[currentFormation];
+            const absent = getAbsent();
+            const available = getAvailablePlayers();
             
-            // Get linked quarter players (K1↔K2, K3↔K4)
-            const linkedQuarter = currentQuarter === 1 ? 2 : (currentQuarter === 2 ? 1 : (currentQuarter === 3 ? 4 : 3));
-            const linkedLineup = lineup[linkedQuarter] || {};
-            const linkedOnField = Object.values(linkedLineup).filter(p => p);
+            // Check which players play ALL 4 quarters (no rest)
+            const playersInAllQuarters = available.filter(player => {
+                for (let quarter = 1; quarter <= 4; quarter++) {
+                    const qLineup = lineup[quarter] || {};
+                    const onFieldInQ = Object.values(qLineup).filter(p => p);
+                    if (!onFieldInQ.includes(player)) return false;
+                }
+                return true;
+            });
             
             f.positions.forEach(pos => {
                 const el = document.getElementById(`pos-${pos}`);
                 const playerName = q[pos] || '-';
                 if (el) el.textContent = playerName;
                 
-                // Mark purple if player also plays in linked quarter
+                // Mark purple if player plays ALL 4 quarters
                 const posEl = el?.closest('.position');
                 if (posEl) {
-                    const playsDouble = playerName !== '-' && linkedOnField.includes(playerName);
-                    posEl.classList.toggle('double-duty', playsDouble);
+                    const noRest = playerName !== '-' && playersInAllQuarters.includes(playerName);
+                    posEl.classList.toggle('no-rest', noRest);
                 }
             });
             
             const onField = Object.values(q).filter(p => p);
-            const bench = team.spelers.filter(p => !onField.includes(p));
-            const linkedBench = team.spelers.filter(p => !linkedOnField.includes(p));
+            const bench = available.filter(p => !onField.includes(p));
+            
+            // For warning: check linked quarter
+            const linkedQuarter = currentQuarter === 1 ? 2 : (currentQuarter === 2 ? 1 : (currentQuarter === 3 ? 4 : 3));
+            const linkedLineup = lineup[linkedQuarter] || {};
+            const linkedOnField = Object.values(linkedLineup).filter(p => p);
+            const linkedBench = available.filter(p => !linkedOnField.includes(p));
             
             // Players on bench in both linked quarters = warning
             const doubleBench = bench.filter(p => linkedBench.includes(p));
@@ -1238,6 +1306,42 @@
             }
             
             document.getElementById('benchPlayers').innerHTML = benchHtml;
+            
+            // Render absent toggles
+            renderAbsentPlayers();
+        }
+        
+        function renderAbsentPlayers() {
+            const team = teams[currentTeam];
+            const absent = getAbsent();
+            
+            document.getElementById('absentPlayers').innerHTML = team.spelers.map(p => {
+                const isAbsent = absent.includes(p);
+                return `<div class="absent-toggle ${isAbsent ? 'absent' : ''}" onclick="toggleAbsent('${p}')">${p}</div>`;
+            }).join('');
+        }
+        
+        function toggleAbsent(player) {
+            let absent = getAbsent();
+            if (absent.includes(player)) {
+                absent = absent.filter(p => p !== player);
+            } else {
+                absent.push(player);
+                // Remove from lineup if absent
+                const lineup = getLineup();
+                for (let q = 1; q <= 4; q++) {
+                    if (lineup[q]) {
+                        for (let pos in lineup[q]) {
+                            if (lineup[q][pos] === player) {
+                                lineup[q][pos] = '';
+                            }
+                        }
+                    }
+                }
+                setLineup(lineup);
+            }
+            setAbsent(absent);
+            renderLineup();
         }
         
         function renderNotes() {
@@ -1358,10 +1462,10 @@
             selectedPosition = pos;
             document.getElementById('modalPosition').textContent = pos;
             
-            const team = teams[currentTeam];
             const lineup = getLineup();
             const currentPlayers = Object.values(lineup[currentQuarter] || {});
-            const available = team.spelers.filter(p => !currentPlayers.includes(p) || lineup[currentQuarter][pos] === p);
+            const availablePlayers = getAvailablePlayers();
+            const available = availablePlayers.filter(p => !currentPlayers.includes(p) || lineup[currentQuarter][pos] === p);
             
             document.getElementById('modalPlayers').innerHTML = `
                 <div class="modal-player" onclick="assignPlayer('')">- Leeg -</div>
