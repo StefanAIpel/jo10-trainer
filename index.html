@@ -204,24 +204,24 @@
             color: #FFD700;
         }
         
-        .content { padding: 12px; display: none; max-width: 500px; margin: 0 auto; }
+        .content { padding: 8px 10px; display: none; max-width: 500px; margin: 0 auto; }
         .content.active { display: block; }
         
         .quarter-tabs {
             display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 4px;
+            margin-bottom: 8px;
         }
         .quarter-tab {
             flex: 1;
-            padding: 8px;
+            padding: 6px;
             background: rgba(255,255,255,0.08);
             border: 2px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
+            border-radius: 6px;
             text-align: center;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.85em;
+            font-size: 0.8em;
             color: rgba(255,255,255,0.7);
             transition: all 0.2s;
         }
@@ -483,9 +483,9 @@
         /* SCORE */
         .score-display {
             background: rgba(0,0,0,0.25);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
             text-align: center;
             border: 1px solid rgba(255,215,0,0.2);
         }
@@ -493,10 +493,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         .score-num {
-            font-size: 2em;
+            font-size: 1.8em;
             font-weight: 700;
             color: #FFD700;
         }
@@ -504,23 +504,24 @@
         
         .player-select {
             width: 100%;
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,215,0,0.3);
-            border-radius: 8px;
-            color: white;
+            padding: 8px;
+            background: rgba(255,215,0,0.1);
+            border: 2px solid rgba(255,215,0,0.5);
+            border-radius: 6px;
+            color: #FFD700;
             font-size: 0.9em;
-            margin-bottom: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
         
         .note-buttons {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 5px;
+            margin-bottom: 8px;
         }
         .note-btn {
-            padding: 10px 6px;
+            padding: 8px 4px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -543,14 +544,14 @@
         
         .opponent-goal-btn {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             background: linear-gradient(135deg, #c0392b, #a93226);
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             color: white;
             font-weight: 600;
             font-size: 0.85em;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             cursor: pointer;
         }
         
@@ -969,7 +970,7 @@
     </div>
     
     <div class="tabs">
-        <div class="tab active" data-tab="opstelling">📋 Opstelling</div>
+        <div class="tab active" data-tab="opstelling">⚽ Opstelling</div>
         <div class="tab" data-tab="notities">📝 Verslag</div>
         <div class="tab" data-tab="info">ℹ️ Info</div>
     </div>
