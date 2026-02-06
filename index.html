@@ -1345,9 +1345,16 @@
         }
         
         function selectTeam(teamId) {
-            // Save current team's clock before switching
+            // Save current team's clock before switching (incl running state)
             saveClock();
-            if (clockRunning) pauseClock();
+            // Stop interval but don't reset running state in storage
+            if (clockInterval) {
+                clearInterval(clockInterval);
+                clockInterval = null;
+            }
+            clockRunning = false;
+            document.getElementById('clockPlayBtn').textContent = '▶️';
+            document.getElementById('clockPlayBtn').className = 'clock-btn play';
             
             currentTeam = teamId;
             document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
@@ -1957,7 +1964,7 @@
         function getClockKey() { return `jo10trainer_${currentTeam}_clock`; }
         
         function saveClock() {
-            const state = { clockSeconds, clockQuarter, clockInPause, pauseSeconds };
+            const state = { clockSeconds, clockQuarter, clockInPause, pauseSeconds, wasRunning: clockRunning, savedAt: Date.now() };
             localStorage.setItem(getClockKey(), JSON.stringify(state));
         }
         
@@ -1965,10 +1972,35 @@
             const saved = localStorage.getItem(getClockKey());
             if (saved) {
                 const state = JSON.parse(saved);
-                clockSeconds = state.clockSeconds || 0;
                 clockQuarter = state.clockQuarter || 1;
                 clockInPause = state.clockInPause || false;
                 pauseSeconds = state.pauseSeconds || 0;
+                
+                // Bereken verlopen tijd als klok draaide
+                if (state.wasRunning && state.savedAt) {
+                    const elapsedSec = Math.floor((Date.now() - state.savedAt) / 1000);
+                    if (clockInPause) {
+                        pauseSeconds = Math.max(0, (state.pauseSeconds || 0) - elapsedSec);
+                        if (pauseSeconds <= 0) {
+                            // Pauze was afgelopen, start volgend kwart
+                            clockQuarter++;
+                            clockInPause = false;
+                            clockSeconds = Math.min(elapsedSec - (state.pauseSeconds || 0), QUARTER_DURATION);
+                        }
+                    } else {
+                        clockSeconds = (state.clockSeconds || 0) + elapsedSec;
+                        // Check of kwart voorbij is
+                        while (clockSeconds >= QUARTER_DURATION && clockQuarter < 4) {
+                            clockSeconds -= QUARTER_DURATION;
+                            clockQuarter++;
+                        }
+                        if (clockSeconds > QUARTER_DURATION) clockSeconds = QUARTER_DURATION;
+                    }
+                    // Hervat timer
+                    startClock();
+                } else {
+                    clockSeconds = state.clockSeconds || 0;
+                }
             } else {
                 clockSeconds = 0;
                 clockQuarter = 1;
@@ -1977,6 +2009,8 @@
             }
             updateClockDisplay();
             document.getElementById('clockQuarter').textContent = clockInPause ? `→K${clockQuarter + 1}` : `K${clockQuarter}`;
+            document.querySelectorAll('.quarter-tab').forEach((t, i) => t.classList.toggle('active', i + 1 === clockQuarter));
+            currentQuarter = clockQuarter;
         }
         
         function toggleClock() {
