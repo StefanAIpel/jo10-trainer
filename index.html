@@ -272,6 +272,12 @@
             text-overflow: ellipsis;
         }
         .position.keeper .player-name { color: #0047AB; }
+        .position.double-duty {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            border-color: #bb8fce;
+        }
+        .position.double-duty .pos-label { color: #e8daef; }
+        .position.double-duty .player-name { color: #fff; }
         
         .bench {
             background: rgba(0,0,0,0.2);
@@ -991,9 +997,22 @@
             const team = teams[currentTeam];
             const f = formations[currentFormation];
             
+            // Get linked quarter players (K1↔K2, K3↔K4)
+            const linkedQuarter = currentQuarter === 1 ? 2 : (currentQuarter === 2 ? 1 : (currentQuarter === 3 ? 4 : 3));
+            const linkedLineup = lineup[linkedQuarter] || {};
+            const linkedOnField = Object.values(linkedLineup).filter(p => p);
+            
             f.positions.forEach(pos => {
                 const el = document.getElementById(`pos-${pos}`);
-                if (el) el.textContent = q[pos] || '-';
+                const playerName = q[pos] || '-';
+                if (el) el.textContent = playerName;
+                
+                // Mark purple if player also plays in linked quarter
+                const posEl = el?.closest('.position');
+                if (posEl) {
+                    const playsDouble = playerName !== '-' && linkedOnField.includes(playerName);
+                    posEl.classList.toggle('double-duty', playsDouble);
+                }
             });
             
             const onField = Object.values(q).filter(p => p);
