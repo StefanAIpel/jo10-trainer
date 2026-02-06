@@ -199,16 +199,16 @@
         
         .position-row {
             display: flex;
-            justify-content: center;
-            gap: 8px;
+            justify-content: space-evenly;
+            padding: 0 10px;
             margin: 8px 0;
             position: relative;
             z-index: 1;
         }
-        .position-row.attack { margin-top: 15px; }
-        .position-row.midfield { margin: 35px 0; }
-        .position-row.defense { margin-bottom: 10px; }
-        .position-row.keeper { margin-top: 25px; }
+        .position-row.attack { margin-top: 12px; }
+        .position-row.midfield { margin: 30px 0; }
+        .position-row.defense { margin-bottom: 8px; }
+        .position-row.keeper { margin-top: 20px; justify-content: center; }
         
         .position {
             background: linear-gradient(135deg, #0047AB 0%, #003380 100%);
@@ -613,7 +613,7 @@
         <div class="info-card">
             <h3>📋 Wedstrijd</h3>
             <div class="info-row"><span class="info-label">Tegenstander:</span><span class="info-value" id="infoOpponent">-</span></div>
-            <div class="info-row"><span class="info-label">Formatie:</span><span class="info-value" id="infoFormation">2-3-1</span></div>
+            <div class="info-row"><span class="info-label">Formatie:</span><span class="info-value" id="infoFormation">1-2-1-2</span></div>
         </div>
         <div class="info-card">
             <h3>👥 Team</h3>
@@ -670,17 +670,19 @@
             ...teams['jo10-3'].spelers
         ];
         
-        // Formaties: positie codes en hun veld posities (relatief %)
+        // Formaties: positie codes en hun veld posities
         const formations = {
-            '2-3-1': { // Standaard voor teams
-                positions: ['K', 'LV', 'RV', 'LM', 'CM', 'RM', 'SP'],
+            // 6v6 voor teams (dobbelsteen 5: 1-2-1-2)
+            '1-2-1-2': {
+                positions: ['K', 'LV', 'RV', 'M', 'LA', 'RA'],
                 layout: {
-                    attack: ['SP'],
-                    midfield: ['LM', 'CM', 'RM'],
+                    attack: ['LA', 'RA'],
+                    midfield: ['M'],
                     defense: ['LV', 'RV'],
                     keeper: ['K']
                 }
             },
+            // 8v8 formaties voor mix
             '2-3-2': {
                 positions: ['K', 'LV', 'RV', 'LM', 'CM', 'RM', 'LA', 'RA'],
                 layout: {
@@ -771,7 +773,7 @@
                 renderMixPlayers();
                 teams.mix.spelers = mixSelected;
             } else {
-                currentFormation = '2-3-1';
+                currentFormation = '1-2-1-2'; // 6v6 dobbelsteen
             }
             
             updateUI();
