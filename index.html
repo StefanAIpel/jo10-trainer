@@ -153,22 +153,28 @@
         
         /* AUTO BUTTON */
         .auto-btn {
-            width: 100%;
-            padding: 10px;
-            background: linear-gradient(135deg, #27ae60, #1e8449);
-            border: none;
-            border-radius: 8px;
-            color: white;
+            padding: 8px 14px;
+            background: rgba(39,174,96,0.15);
+            border: 1px solid rgba(39,174,96,0.4);
+            border-radius: 6px;
+            color: #58d68d;
             font-weight: 600;
-            font-size: 0.85em;
+            font-size: 0.75em;
             cursor: pointer;
-            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
+            transition: all 0.2s;
         }
+        .auto-btn:hover { background: rgba(39,174,96,0.25); }
         .auto-btn:active { transform: scale(0.98); }
+        .auto-btn.reset {
+            background: rgba(231,76,60,0.1);
+            border-color: rgba(231,76,60,0.3);
+            color: #e74c3c;
+        }
+        .auto-btn.reset:hover { background: rgba(231,76,60,0.2); }
         
         /* FORMATIE SELECTOR */
         .formation-selector {
@@ -822,17 +828,64 @@
             .modal-confirm { padding: 14px; font-size: 1em; }
         }
         
-        /* LARGE DESKTOP */
+        /* LARGE DESKTOP - Landscape */
         @media (min-width: 1200px) {
-            .content { max-width: 900px; }
+            .content { 
+                max-width: 1400px; 
+                display: grid;
+                grid-template-columns: 1fr 350px;
+                gap: 24px;
+                align-items: start;
+            }
             
-            .field { min-height: 450px; }
+            .content > .absent-section { grid-column: 1 / -1; }
+            .content > div[style*="justify-content"] { grid-column: 1 / -1; }
+            .content > .quarter-tabs { grid-column: 1; }
+            .content > .formation-selector { grid-column: 1 / -1; }
+            .content > .mix-section { grid-column: 1 / -1; }
+            .content > .field { grid-column: 1; grid-row: span 2; }
+            .content > .bench { grid-column: 2; margin-top: 0; }
+            .content > .share-btn { grid-column: 1 / -1; margin-top: 0; }
             
-            .position { min-width: 110px; padding: 14px 10px; }
-            .position .player-name { font-size: 1em; }
+            .field { min-height: 380px; }
             
-            .position-row { padding: 0 50px; }
-            .position-row.midfield { margin: 60px 0; }
+            .position { min-width: 100px; padding: 10px 8px; }
+            .position .player-name { font-size: 0.9em; }
+            
+            .position-row { padding: 0 40px; }
+            .position-row.midfield { margin: 45px 0; }
+            
+            .bench {
+                height: fit-content;
+                position: sticky;
+                top: 80px;
+            }
+            
+            .quarter-tabs { margin-bottom: 12px; }
+        }
+        
+        /* EXTRA WIDE - All in one view */
+        @media (min-width: 1600px) {
+            .content {
+                max-width: 1600px;
+                grid-template-columns: 250px 1fr 300px;
+            }
+            
+            .content > .absent-section { grid-column: 1; grid-row: 1 / 3; }
+            .content > div[style*="justify-content"] { grid-column: 2; }
+            .content > .quarter-tabs { grid-column: 2; }
+            .content > .field { grid-column: 2; }
+            .content > .bench { grid-column: 3; grid-row: 1 / 4; }
+            .content > .share-btn { grid-column: 2; }
+            
+            .absent-section {
+                height: fit-content;
+                position: sticky;
+                top: 80px;
+            }
+            .absent-players {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -880,9 +933,9 @@
         </div>
         
         <!-- Auto opstelling knoppen -->
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-            <button class="auto-btn" style="flex:1;margin:0;" onclick="autoFillLineup()">🔄 Auto</button>
-            <button class="auto-btn" style="flex:1;margin:0;background:linear-gradient(135deg,#e74c3c,#c0392b);" onclick="resetLineup()">🗑️ Reset</button>
+        <div style="display:flex;gap:8px;margin-bottom:12px;justify-content:flex-end;">
+            <button class="auto-btn" onclick="autoFillLineup()">🔄 Auto</button>
+            <button class="auto-btn reset" onclick="resetLineup()">↩️ Reset</button>
         </div>
         
         <!-- Formatie selector (alleen bij 8v8) -->
