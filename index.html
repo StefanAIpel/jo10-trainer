@@ -904,7 +904,7 @@
     
     <div class="opponent-bar">
         <label>vs</label>
-        <input type="text" id="opponentInput" placeholder="Tegenstander..." onchange="updateOpponent()">
+        <input type="text" id="opponentInput" placeholder="Tegenstander..." oninput="updateOpponent()" onchange="updateOpponent()">
     </div>
     
     <div class="tabs">
@@ -992,6 +992,8 @@
             <button class="clear-btn" onclick="clearAllNotes()">🗑️ Wis alle notities</button>
             <button class="clear-btn" onclick="resetScore()">↩️ Reset score</button>
         </div>
+        
+        <button class="share-btn" onclick="shareNotes()" style="margin-top:12px;">📤 Deel notities</button>
     </div>
     
     <!-- INFO -->
@@ -1632,6 +1634,33 @@
             
             if (navigator.share) {
                 navigator.share({ title: `${team.naam} Opstelling`, text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Gekopieerd naar klembord!');
+            }
+        }
+        
+        function shareNotes() {
+            const team = teams[currentTeam];
+            const match = getMatch();
+            const notes = getNotes();
+            
+            let text = `📝 *${team.naam} vs ${match.opponent || '?'}*\n`;
+            text += `📊 Eindstand: ${match.scoreHome || 0} - ${match.scoreAway || 0}\n\n`;
+            
+            if (notes.length === 0) {
+                text += `Geen notities`;
+            } else {
+                const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅' };
+                notes.forEach(n => {
+                    text += `${icons[n.type] || '📝'} K${n.quarter} ${n.time} - ${n.player || ''}`;
+                    if (n.text) text += `: ${n.text}`;
+                    text += `\n`;
+                });
+            }
+            
+            if (navigator.share) {
+                navigator.share({ title: `${team.naam} Notities`, text });
             } else {
                 navigator.clipboard.writeText(text);
                 alert('Gekopieerd naar klembord!');
