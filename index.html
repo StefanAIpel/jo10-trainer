@@ -426,10 +426,44 @@
             border-radius: 6px;
             border-left: 3px solid #FFD700;
             font-size: 0.8em;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .note-item .note-content { flex: 1; }
+        .note-item .note-delete {
+            background: rgba(231,76,60,0.3);
+            border: none;
+            color: #e74c3c;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            flex-shrink: 0;
         }
         .note-item.goal { border-left-color: #27ae60; }
         .note-item.assist { border-left-color: #3498db; }
         .note-item.opponent_goal { border-left-color: #e74c3c; }
+        
+        .clear-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .clear-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(231,76,60,0.15);
+            border: 1px solid rgba(231,76,60,0.3);
+            border-radius: 6px;
+            color: #e74c3c;
+            font-size: 0.75em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .clear-btn:active { background: rgba(231,76,60,0.25); }
         
         .share-btn {
             width: 100%;
@@ -576,8 +610,11 @@
             <div class="quarter-tab" data-quarter="4">K4</div>
         </div>
         
-        <!-- Auto opstelling knop -->
-        <button class="auto-btn" onclick="autoFillLineup()">🔄 Auto opstelling</button>
+        <!-- Auto opstelling knoppen -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button class="auto-btn" style="flex:1;margin:0;" onclick="autoFillLineup()">🔄 Auto</button>
+            <button class="auto-btn" style="flex:1;margin:0;background:linear-gradient(135deg,#e74c3c,#c0392b);" onclick="resetLineup()">🗑️ Reset</button>
+        </div>
         
         <!-- Formatie selector (alleen bij 8v8) -->
         <div class="formation-selector" id="formationSelector" style="display:none;">
@@ -632,6 +669,11 @@
         <button class="opponent-goal-btn" onclick="addOpponentGoal()">🥅 Tegendoelpunt</button>
         
         <div class="notes-list" id="notesList"></div>
+        
+        <div class="clear-btns">
+            <button class="clear-btn" onclick="clearAllNotes()">🗑️ Wis alle notities</button>
+            <button class="clear-btn" onclick="resetScore()">↩️ Reset score</button>
+        </div>
     </div>
     
     <!-- INFO -->
@@ -946,12 +988,66 @@
         function renderNotes() {
             const notes = getNotes();
             const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅' };
-            document.getElementById('notesList').innerHTML = notes.map(n => `
+            document.getElementById('notesList').innerHTML = notes.map((n, i) => `
                 <div class="note-item ${n.type}">
-                    <strong>${icons[n.type] || '📝'} ${n.player || ''}</strong> <small style="opacity:0.6">K${n.quarter} ${n.time}</small>
-                    ${n.text ? `<br><span style="color:rgba(255,255,255,0.6)">${n.text}</span>` : ''}
+                    <div class="note-content">
+                        <strong>${icons[n.type] || '📝'} ${n.player || ''}</strong> <small style="opacity:0.6">K${n.quarter} ${n.time}</small>
+                        ${n.text ? `<br><span style="color:rgba(255,255,255,0.6)">${n.text}</span>` : ''}
+                    </div>
+                    <button class="note-delete" onclick="deleteNote(${i})">×</button>
                 </div>
             `).join('') || '<p style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.85em">Geen notities</p>';
+        }
+        
+        function deleteNote(index) {
+            const notes = getNotes();
+            const note = notes[index];
+            // Adjust score if deleting a goal
+            if (note && note.type === 'goal') {
+                const match = getMatch();
+                match.scoreHome = Math.max(0, (match.scoreHome || 0) - 1);
+                setMatch(match);
+                document.getElementById('scoreHome').textContent = match.scoreHome;
+            }
+            if (note && note.type === 'opponent_goal') {
+                const match = getMatch();
+                match.scoreAway = Math.max(0, (match.scoreAway || 0) - 1);
+                setMatch(match);
+                document.getElementById('scoreAway').textContent = match.scoreAway;
+            }
+            notes.splice(index, 1);
+            setNotes(notes);
+            renderNotes();
+        }
+        
+        function clearAllNotes() {
+            if (confirm('Alle notities verwijderen?')) {
+                setNotes([]);
+                renderNotes();
+            }
+        }
+        
+        function resetScore() {
+            if (confirm('Score resetten naar 0-0?')) {
+                const match = getMatch();
+                match.scoreHome = 0;
+                match.scoreAway = 0;
+                setMatch(match);
+                document.getElementById('scoreHome').textContent = 0;
+                document.getElementById('scoreAway').textContent = 0;
+            }
+        }
+        
+        function resetLineup() {
+            if (confirm(`Opstelling K${currentQuarter} wissen?`)) {
+                const lineup = getLineup();
+                const f = formations[currentFormation];
+                const empty = {};
+                f.positions.forEach(p => empty[p] = '');
+                lineup[currentQuarter] = empty;
+                setLineup(lineup);
+                renderLineup();
+            }
         }
         
         // Quarter tabs
