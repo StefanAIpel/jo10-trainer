@@ -1615,15 +1615,19 @@
             
             for (let q = 1; q <= 4; q++) {
                 const l = lineup[q] || {};
-                // Sort by football position order
+                // Sort by football position order: K=1, RV=2, LV=3, M=4, RA=5, LA=6
                 const sortedEntries = Object.entries(l)
                     .filter(([k,v]) => v)
                     .sort((a, b) => positionOrder.indexOf(a[0]) - positionOrder.indexOf(b[0]));
-                const players = sortedEntries.map(([k,v]) => `${k}:${v}`).join(' | ');
+                
                 const onField = Object.values(l).filter(p => p);
                 const bench = available.filter(p => !onField.includes(p));
-                text += `\n📋 K${q}: ${players || '-'}\n`;
-                if (bench.length) text += `   🪑 ${bench.join(', ')}\n`;
+                
+                text += `\n📋 *K${q}*\n`;
+                sortedEntries.forEach(([pos, name], i) => {
+                    text += `${i+1}. ${pos}: ${name}\n`;
+                });
+                if (bench.length) text += `🪑 ${bench.join(', ')}\n`;
             }
             
             if (navigator.share) {
