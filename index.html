@@ -71,12 +71,19 @@
             color: #003087;
         }
         .timer-btn.end-quarter {
+            background: #dc3545;
+            color: white;
+            border: none;
+        }
+        .timer-spacer {
+            flex: 1;
+        }
+        .timer-btn.reset {
             background: transparent;
-            color: #dc3545;
-            border: 2px solid #dc3545;
-            margin-left: auto;
-            font-size: 0.75em;
-            padding: 6px 10px;
+            color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            font-size: 0.7em;
+            padding: 5px 8px;
         }
         
         .team-select {
@@ -520,7 +527,9 @@
         <div class="timer-display" id="timerDisplay">00:00</div>
         <div class="timer-quarter" id="timerQuarter">K1</div>
         <button class="timer-btn start" id="timerBtn" onclick="toggleTimer()">▶ Start</button>
-        <button class="timer-btn end-quarter" onclick="endQuarterPrompt()">⏹ Einde K</button>
+        <button class="timer-btn end-quarter" id="endQuarterBtn" onclick="endQuarterPrompt()" style="display:none;">⏹ Stop K</button>
+        <div class="timer-spacer"></div>
+        <button class="timer-btn reset" onclick="resetMatchPrompt()">🗑</button>
     </div>
     
     <div class="team-select">
@@ -610,8 +619,6 @@
         <button class="opponent-goal-btn" onclick="addOpponentGoal()">🥅 Tegendoelpunt</button>
         
         <div class="notes-list" id="notesList"></div>
-        
-        <button class="reset-btn" onclick="resetMatch()">🗑 Reset wedstrijd</button>
     </div>
     
     <div class="content" id="verslag">
@@ -731,6 +738,16 @@
         </div>
     </div>
     
+    <!-- Reset match confirmation -->
+    <div class="modal" id="resetMatchModal">
+        <div class="modal-content">
+            <div class="modal-title">🗑 Wedstrijd resetten?</div>
+            <p style="margin-bottom:15px;color:#aaa;">Alle notities, score en timer worden gewist. Weet je het zeker?</p>
+            <button class="modal-confirm" style="background:#dc3545;color:white;" onclick="confirmResetMatch()">🗑 Ja, reset alles</button>
+            <button class="modal-close" onclick="closeResetMatchModal()">Annuleren</button>
+        </div>
+    </div>
+    
     <div class="toast" id="toast"></div>
 
     <script>
@@ -797,6 +814,7 @@
             document.getElementById('timerBtn').textContent = '⏸ Pauze';
             document.getElementById('timerBtn').classList.remove('start');
             document.getElementById('timerBtn').classList.add('stop');
+            document.getElementById('endQuarterBtn').style.display = 'block';
             document.querySelector(`.quarter-tab[data-quarter="${timerQuarter}"]`).classList.add('playing');
             
             timerInterval = setInterval(() => {
@@ -817,6 +835,10 @@
             document.getElementById('timerBtn').textContent = '▶ Start';
             document.getElementById('timerBtn').classList.add('start');
             document.getElementById('timerBtn').classList.remove('stop');
+            // Keep end quarter button visible if timer has started
+            if (timerSeconds > 0) {
+                document.getElementById('endQuarterBtn').style.display = 'block';
+            }
         }
         
         function updateTimerDisplay() {
@@ -1276,20 +1298,33 @@
             }
         }
         
-        function resetMatch() {
-            if (!confirm('Weet je zeker dat je de hele wedstrijd wilt resetten? Alle notities worden gewist.')) return;
+        function resetMatchPrompt() {
+            document.getElementById('resetMatchModal').classList.add('active');
+        }
+        
+        function closeResetMatchModal() {
+            document.getElementById('resetMatchModal').classList.remove('active');
+        }
+        
+        function confirmResetMatch() {
+            closeResetMatchModal();
             notes = [];
             matchData.scoreHome = 0;
             matchData.scoreAway = 0;
             timerSeconds = 0;
             timerQuarter = 1;
             pauseTimer();
+            document.getElementById('endQuarterBtn').style.display = 'none';
             updateTimerDisplay();
             saveData();
             updateScore();
             renderNotes();
             renderVerslag();
             showToast('🗑 Wedstrijd gereset');
+        }
+        
+        function resetMatch() {
+            resetMatchPrompt();
         }
         
         function saveData() {
