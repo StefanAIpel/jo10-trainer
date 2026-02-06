@@ -1345,6 +1345,10 @@
         }
         
         function selectTeam(teamId) {
+            // Save current team's clock before switching
+            saveClock();
+            if (clockRunning) pauseClock();
+            
             currentTeam = teamId;
             document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
             document.querySelector(`[data-team="${teamId}"]`).classList.add('active');
@@ -1361,6 +1365,9 @@
             } else {
                 currentFormation = '1-2-1-2';
             }
+            
+            // Load this team's clock
+            loadClock();
             
             setupFirebaseListeners();
             updateUI();
@@ -1936,9 +1943,9 @@
             }
         }
         
-        // MATCH CLOCK
+        // MATCH CLOCK - per team opgeslagen
         let clockInterval = null;
-        let clockSeconds = 0; // Seconds within current quarter
+        let clockSeconds = 0;
         let clockRunning = false;
         let clockQuarter = 1;
         let clockInPause = false;
@@ -1946,6 +1953,31 @@
         const QUARTER_DURATION = 12 * 60 + 30; // 12:30 min in seconds
         const SHORT_PAUSE = 3 * 60 + 30; // 3:30 min
         const LONG_PAUSE = 5 * 60; // 5 min between K2-K3
+        
+        function getClockKey() { return `jo10trainer_${currentTeam}_clock`; }
+        
+        function saveClock() {
+            const state = { clockSeconds, clockQuarter, clockInPause, pauseSeconds };
+            localStorage.setItem(getClockKey(), JSON.stringify(state));
+        }
+        
+        function loadClock() {
+            const saved = localStorage.getItem(getClockKey());
+            if (saved) {
+                const state = JSON.parse(saved);
+                clockSeconds = state.clockSeconds || 0;
+                clockQuarter = state.clockQuarter || 1;
+                clockInPause = state.clockInPause || false;
+                pauseSeconds = state.pauseSeconds || 0;
+            } else {
+                clockSeconds = 0;
+                clockQuarter = 1;
+                clockInPause = false;
+                pauseSeconds = 0;
+            }
+            updateClockDisplay();
+            document.getElementById('clockQuarter').textContent = clockInPause ? `→K${clockQuarter + 1}` : `K${clockQuarter}`;
+        }
         
         function toggleClock() {
             if (clockRunning) {
@@ -1968,9 +2000,11 @@
                         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     }
                     updateClockDisplay();
+                    saveClock();
                 } else {
                     clockSeconds++;
                     updateClockDisplay();
+                    saveClock();
                     
                     // End of quarter
                     if (clockSeconds >= QUARTER_DURATION && clockQuarter < 4) {
@@ -1995,6 +2029,7 @@
             // Toon welk kwart komt na pauze
             document.getElementById('clockQuarter').textContent = `→K${nextQ}`;
             showToast(`⏸️ Pauze K${clockQuarter}→K${nextQ}`);
+            saveClock();
         }
         
         function startNextQuarter() {
@@ -2009,6 +2044,7 @@
             currentQuarter = clockQuarter;
             renderLineup();
             showToast(`▶️ K${clockQuarter} gestart!`);
+            saveClock();
         }
         
         function stopQuarter() {
@@ -2065,6 +2101,7 @@
             updateClockDisplay();
             document.getElementById('clockQuarter').textContent = 'K1';
             skipToQuarter(1);
+            saveClock();
         }
         
         function updateClockDisplay() {
