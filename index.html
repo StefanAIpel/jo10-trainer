@@ -1017,11 +1017,6 @@
             
             const onField = Object.values(q).filter(p => p);
             const bench = team.spelers.filter(p => !onField.includes(p));
-            
-            // Check who was also on bench in linked quarter (K1↔K2, K3↔K4)
-            const linkedQuarter = currentQuarter === 1 ? 2 : (currentQuarter === 2 ? 1 : (currentQuarter === 3 ? 4 : 3));
-            const linkedLineup = lineup[linkedQuarter] || {};
-            const linkedOnField = Object.values(linkedLineup).filter(p => p);
             const linkedBench = team.spelers.filter(p => !linkedOnField.includes(p));
             
             // Players on bench in both linked quarters = warning
