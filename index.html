@@ -970,7 +970,7 @@
     
     <div class="tabs">
         <div class="tab active" data-tab="opstelling">📋 Opstelling</div>
-        <div class="tab" data-tab="notities">📝 Notities</div>
+        <div class="tab" data-tab="notities">📝 Verslag</div>
         <div class="tab" data-tab="info">ℹ️ Info</div>
     </div>
     
@@ -1047,7 +1047,7 @@
         <div class="notes-list" id="notesList"></div>
         
         <div class="clear-btns">
-            <button class="clear-btn" onclick="clearAllNotes()">🗑️ Wis alle notities</button>
+            <button class="clear-btn" onclick="clearAllNotes()">🗑️ Wis verslag</button>
             <button class="clear-btn" onclick="resetScore()">↩️ Reset score</button>
         </div>
         
@@ -1582,7 +1582,7 @@
                         <button class="note-delete" onclick="deleteNote(${i})">×</button>
                     </div>
                 `;
-            }).join('') || '<p style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.85em">Geen notities</p>';
+            }).join('') || '<p style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.85em">Nog geen items</p>';
         }
         
         function deleteNote(index) {
@@ -1607,7 +1607,7 @@
         }
         
         function clearAllNotes() {
-            if (confirm('Alle notities verwijderen?')) {
+            if (confirm('Verslag wissen?')) {
                 setNotes([]);
                 renderNotes();
             }
