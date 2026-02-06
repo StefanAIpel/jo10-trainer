@@ -1485,7 +1485,7 @@
             document.getElementById('notesList').innerHTML = notes.map((n, i) => `
                 <div class="note-item ${n.type}">
                     <div class="note-content">
-                        <strong>${icons[n.type] || '📝'} ${n.player || ''}</strong> <small style="opacity:0.6">K${n.quarter} ${n.time}</small>
+                        <strong>${icons[n.type] || '📝'} ${n.matchMinute !== undefined ? n.matchMinute + "'" : ''} ${n.player || ''}</strong> <small style="opacity:0.6">K${n.quarter}</small>
                         ${n.text ? `<br><span style="color:rgba(255,255,255,0.6)">${n.text}</span>` : ''}
                     </div>
                     <button class="note-delete" onclick="deleteNote(${i})">×</button>
@@ -1632,10 +1632,12 @@
         
         function confirmNote() {
             const notes = getNotes();
+            const matchMin = getMatchMinute();
             const note = {
                 ...pendingNote,
                 text: document.getElementById('noteText').value,
                 time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
+                matchMinute: matchMin,
                 quarter: currentQuarter
             };
             notes.unshift(note);
@@ -1679,7 +1681,10 @@
             // Voetbal volgorde: K=1, RV=2, LV=3, M=4, RA=5, LA=6
             const positionOrder = ['K', 'RV', 'LV', 'CV', 'M', 'RA', 'LA', 'RM', 'CM', 'LM', 'RCM', 'LCM', 'SP'];
             
-            let text = `⚽ *${team.naam} vs ${match.opponent || '?'}*\n`;
+            const today = new Date().toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
+            const homeAway = match.isHome !== false ? '(Thuis)' : '(Uit)';
+            let text = `⚽ *${team.naam} vs ${match.opponent || '?'}* ${homeAway}\n`;
+            text += `📅 ${today} - ${match.startTime || '09:30'}\n`;
             text += `📊 Formatie: ${currentFormation}\n`;
             
             for (let q = 1; q <= 4; q++) {
@@ -1711,23 +1716,33 @@
             const team = teams[currentTeam];
             const match = getMatch();
             const notes = getNotes();
+            const today = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             
-            let text = `📝 *${team.naam} vs ${match.opponent || '?'}*\n`;
-            text += `📊 Eindstand: ${match.scoreHome || 0} - ${match.scoreAway || 0}\n\n`;
+            const homeAway = match.isHome !== false ? '(Thuis)' : '(Uit)';
+            let text = `📋 *WEDSTRIJDVERSLAG*\n`;
+            text += `📅 ${today}\n`;
+            text += `⚽ *${team.naam} vs ${match.opponent || '?'}* ${homeAway}\n`;
+            text += `📊 *Eindstand: ${match.scoreHome || 0} - ${match.scoreAway || 0}*\n\n`;
             
             if (notes.length === 0) {
                 text += `Geen notities`;
             } else {
                 const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅' };
-                notes.forEach(n => {
-                    text += `${icons[n.type] || '📝'} K${n.quarter} ${n.time} - ${n.player || ''}`;
-                    if (n.text) text += `: ${n.text}`;
+                const typeLabels = { goal:'Goal', assist:'Assist', injury:'Blessure', good:'Goed moment', improve:'Kan beter', other:'Notitie', opponent_goal:'Tegendoelpunt' };
+                
+                // Sort by match minute
+                const sorted = [...notes].sort((a, b) => (a.matchMinute || 0) - (b.matchMinute || 0));
+                
+                sorted.forEach(n => {
+                    const min = n.matchMinute !== undefined ? `${n.matchMinute}'` : `K${n.quarter}`;
+                    text += `${icons[n.type] || '📝'} *${min}* ${n.player || typeLabels[n.type] || ''}`;
+                    if (n.text) text += ` - ${n.text}`;
                     text += `\n`;
                 });
             }
             
             if (navigator.share) {
-                navigator.share({ title: `${team.naam} Notities`, text });
+                navigator.share({ title: `${team.naam} Wedstrijdverslag`, text });
             } else {
                 navigator.clipboard.writeText(text);
                 alert('Gekopieerd naar klembord!');
@@ -1736,11 +1751,13 @@
         
         // MATCH CLOCK
         let clockInterval = null;
-        let clockSeconds = 0;
+        let clockSeconds = 0; // Seconds within current quarter
         let clockRunning = false;
         let clockQuarter = 1;
-        const QUARTER_DURATION = 12.5 * 60; // 12.5 min in seconds
-        const SHORT_PAUSE = 3.5 * 60; // 3.5 min
+        let clockInPause = false;
+        let pauseSeconds = 0;
+        const QUARTER_DURATION = 12 * 60 + 30; // 12:30 min in seconds
+        const SHORT_PAUSE = 3 * 60 + 30; // 3:30 min
         const LONG_PAUSE = 5 * 60; // 5 min between K2-K3
         
         function toggleClock() {
@@ -1757,22 +1774,51 @@
             document.getElementById('clockPlayBtn').className = 'clock-btn pause';
             
             clockInterval = setInterval(() => {
-                clockSeconds++;
-                updateClockDisplay();
-                
-                // Auto advance quarters
-                const quarterTime = clockSeconds % Math.ceil(QUARTER_DURATION + (clockQuarter === 2 ? LONG_PAUSE : SHORT_PAUSE));
-                if (clockSeconds > 0 && quarterTime === 0 && clockQuarter < 4) {
-                    clockQuarter++;
-                    document.getElementById('clockQuarter').textContent = `K${clockQuarter}`;
-                    // Also update the quarter tab
-                    document.querySelectorAll('.quarter-tab').forEach((t, i) => {
-                        t.classList.toggle('active', i + 1 === clockQuarter);
-                    });
-                    currentQuarter = clockQuarter;
-                    renderLineup();
+                if (clockInPause) {
+                    pauseSeconds--;
+                    if (pauseSeconds <= 0) {
+                        clockInPause = false;
+                        clockSeconds = 0;
+                        showToast(`▶️ K${clockQuarter} gestart!`);
+                    }
+                    updateClockDisplay();
+                } else {
+                    clockSeconds++;
+                    updateClockDisplay();
+                    
+                    // End of quarter
+                    if (clockSeconds >= QUARTER_DURATION && clockQuarter < 4) {
+                        nextQuarter();
+                    }
                 }
             }, 1000);
+        }
+        
+        function nextQuarter() {
+            clockQuarter++;
+            clockInPause = true;
+            pauseSeconds = clockQuarter === 3 ? LONG_PAUSE : SHORT_PAUSE;
+            
+            document.getElementById('clockQuarter').textContent = `K${clockQuarter}`;
+            document.querySelectorAll('.quarter-tab').forEach((t, i) => {
+                t.classList.toggle('active', i + 1 === clockQuarter);
+            });
+            currentQuarter = clockQuarter;
+            renderLineup();
+            showToast(`⏸️ Pauze - K${clockQuarter} over ${Math.floor(pauseSeconds/60)}:${(pauseSeconds%60).toString().padStart(2,'0')}`);
+        }
+        
+        function skipToQuarter(q) {
+            clockQuarter = q;
+            clockSeconds = 0;
+            clockInPause = false;
+            document.getElementById('clockQuarter').textContent = `K${q}`;
+            document.querySelectorAll('.quarter-tab').forEach((t, i) => {
+                t.classList.toggle('active', i + 1 === q);
+            });
+            currentQuarter = q;
+            renderLineup();
+            updateClockDisplay();
         }
         
         function pauseClock() {
@@ -1783,18 +1829,41 @@
         }
         
         function resetClock() {
+            if (!confirm('Klok resetten?')) return;
             pauseClock();
             clockSeconds = 0;
             clockQuarter = 1;
+            clockInPause = false;
+            pauseSeconds = 0;
             updateClockDisplay();
             document.getElementById('clockQuarter').textContent = 'K1';
+            skipToQuarter(1);
         }
         
         function updateClockDisplay() {
-            const mins = Math.floor(clockSeconds / 60);
-            const secs = clockSeconds % 60;
-            document.getElementById('clockDisplay').textContent = 
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            let display;
+            if (clockInPause) {
+                const mins = Math.floor(pauseSeconds / 60);
+                const secs = pauseSeconds % 60;
+                display = `⏸️ ${mins}:${secs.toString().padStart(2, '0')}`;
+                document.getElementById('clockDisplay').style.color = '#f39c12';
+            } else {
+                const mins = Math.floor(clockSeconds / 60);
+                const secs = clockSeconds % 60;
+                display = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                document.getElementById('clockDisplay').style.color = '#FFD700';
+            }
+            document.getElementById('clockDisplay').textContent = display;
+        }
+        
+        function getMatchMinute() {
+            // Calculate total match minute for notities
+            let totalMins = 0;
+            for (let q = 1; q < clockQuarter; q++) {
+                totalMins += 12.5;
+            }
+            totalMins += clockSeconds / 60;
+            return Math.floor(totalMins);
         }
         
         function toggleHomeAway() {
