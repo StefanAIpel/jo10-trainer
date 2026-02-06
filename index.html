@@ -365,37 +365,29 @@
         .position.no-rest .pos-label { color: #e8daef; }
         .position.no-rest .player-name { color: #fff; }
         
-        /* Afwezig toggle */
-        .absent-section {
-            background: rgba(231,76,60,0.1);
-            border: 1px solid rgba(231,76,60,0.2);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 12px;
-        }
-        .absent-title {
+        /* Afwezig compact */
+        .absent-mini {
+            background: rgba(231,76,60,0.15);
+            border: 1px solid rgba(231,76,60,0.3);
+            padding: 6px 10px;
+            border-radius: 6px;
             font-size: 0.75em;
             color: #e74c3c;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .absent-players {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
+            cursor: pointer;
         }
         .absent-toggle {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.75em;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85em;
             cursor: pointer;
             border: 1px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.08);
             color: rgba(255,255,255,0.8);
             transition: all 0.2s;
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 6px;
         }
         .absent-toggle.absent {
             background: rgba(231,76,60,0.3);
@@ -989,16 +981,13 @@
             <div class="quarter-tab" data-quarter="4">K4</div>
         </div>
         
-        <!-- Afwezig markeren -->
-        <div class="absent-section">
-            <div class="absent-title">🏥 Afwezig (tik om te wisselen)</div>
-            <div class="absent-players" id="absentPlayers"></div>
-        </div>
-        
-        <!-- Auto opstelling knoppen -->
-        <div style="display:flex;gap:8px;margin-bottom:12px;justify-content:flex-end;">
-            <button class="auto-btn" onclick="autoFillLineup()">🔄 Auto</button>
-            <button class="auto-btn reset" onclick="resetLineup()">↩️ Reset</button>
+        <!-- Auto knoppen compact rechtsboven veld -->
+        <div style="display:flex;gap:6px;margin-bottom:8px;justify-content:space-between;align-items:center;">
+            <div class="absent-mini" id="absentMini" onclick="showAbsentModal()">🏥 <span id="absentCount">0</span> afwezig</div>
+            <div style="display:flex;gap:6px;">
+                <button class="auto-btn" onclick="autoFillLineup()">🔄</button>
+                <button class="auto-btn reset" onclick="resetLineup()">↩️</button>
+            </div>
         </div>
         
         <!-- Formatie selector (alleen bij 8v8) -->
@@ -1060,7 +1049,13 @@
             <button class="clear-btn" onclick="resetScore()">↩️ Reset score</button>
         </div>
         
-        <button class="share-btn" onclick="shareNotes()" style="margin-top:12px;">📤 Deel notities</button>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="share-btn" onclick="shareNotes()" style="flex:1;margin:0;">📤 Deel</button>
+            <button class="share-btn" onclick="saveMatchReport()" style="flex:1;margin:0;background:linear-gradient(135deg,#27ae60,#1e8449);">💾 Opslaan</button>
+        </div>
+        
+        <div class="section-title" style="margin-top:16px;font-size:0.8em;color:#FFD700;">📁 Opgeslagen wedstrijden</div>
+        <div id="savedMatches"></div>
     </div>
     
     <!-- INFO -->
@@ -1098,9 +1093,26 @@
     <div class="modal" id="noteModal">
         <div class="modal-content">
             <div class="modal-title" id="noteModalTitle">Notitie</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="noteQuarter" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+                    <option value="1">K1</option>
+                    <option value="2">K2</option>
+                    <option value="3">K3</option>
+                    <option value="4">K4</option>
+                </select>
+                <input type="number" id="noteMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+            </div>
             <textarea id="noteText" placeholder="Toelichting..."></textarea>
             <button class="modal-confirm" onclick="confirmNote()">✓ Opslaan</button>
             <button class="modal-close" onclick="closeNoteModal()">Annuleren</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="absentModal">
+        <div class="modal-content">
+            <div class="modal-title">🏥 Afwezig markeren</div>
+            <div id="absentList"></div>
+            <button class="modal-close" onclick="closeAbsentModal()">Sluiten</button>
         </div>
     </div>
 
@@ -1452,13 +1464,22 @@
         }
         
         function renderAbsentPlayers() {
+            const absent = getAbsent();
+            document.getElementById('absentCount').textContent = absent.length;
+        }
+        
+        function showAbsentModal() {
             const team = teams[currentTeam];
             const absent = getAbsent();
-            
-            document.getElementById('absentPlayers').innerHTML = team.spelers.map(p => {
+            document.getElementById('absentList').innerHTML = team.spelers.map(p => {
                 const isAbsent = absent.includes(p);
-                return `<div class="absent-toggle ${isAbsent ? 'absent' : ''}" onclick="toggleAbsent('${p}')">${p}</div>`;
+                return `<div class="absent-toggle ${isAbsent ? 'absent' : ''}" onclick="toggleAbsent('${p}')">${isAbsent ? '❌ ' : '✅ '}${p}</div>`;
             }).join('');
+            document.getElementById('absentModal').classList.add('active');
+        }
+        
+        function closeAbsentModal() {
+            document.getElementById('absentModal').classList.remove('active');
         }
         
         function toggleAbsent(player) {
@@ -1482,6 +1503,7 @@
             }
             setAbsent(absent);
             renderLineup();
+            showAbsentModal(); // Refresh modal
         }
         
         function renderNotes() {
@@ -1627,23 +1649,26 @@
         
         function addNote(type) {
             const player = document.getElementById('notePlayer').value;
-            if (!player && type !== 'other') { alert('Selecteer eerst een speler'); return; }
+            if (!player && type !== 'other' && type !== 'sub') { alert('Selecteer eerst een speler'); return; }
             pendingNote = { type, player };
             const titles = { goal:'⚽ Goal', assist:'👟 Assist', injury:'🏥 Blessure', good:'⭐ Goed moment', improve:'📈 Kan beter', sub:'🔄 Wissel', other:'📝 Notitie' };
             document.getElementById('noteModalTitle').textContent = titles[type] + (player ? ` - ${player}` : '');
             document.getElementById('noteText').value = '';
+            document.getElementById('noteQuarter').value = currentQuarter;
+            document.getElementById('noteMinute').value = getMatchMinute();
             document.getElementById('noteModal').classList.add('active');
         }
         
         function confirmNote() {
             const notes = getNotes();
-            const matchMin = getMatchMinute();
+            const selectedQuarter = parseInt(document.getElementById('noteQuarter').value);
+            const selectedMinute = parseInt(document.getElementById('noteMinute').value) || getMatchMinute();
             const note = {
                 ...pendingNote,
                 text: document.getElementById('noteText').value,
                 time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
-                matchMinute: matchMin,
-                quarter: currentQuarter
+                matchMinute: selectedMinute,
+                quarter: selectedQuarter
             };
             notes.unshift(note);
             setNotes(notes);
@@ -1723,11 +1748,17 @@
             const notes = getNotes();
             const today = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             
-            const homeAway = match.isHome !== false ? '(Thuis)' : '(Uit)';
+            const isHome = match.isHome !== false;
+            const opponent = match.opponent || 'Tegenstander';
             let text = `📋 *WEDSTRIJDVERSLAG*\n`;
-            text += `📅 ${today}\n`;
-            text += `⚽ *${team.naam} vs ${match.opponent || '?'}* ${homeAway}\n`;
-            text += `📊 *Eindstand: ${match.scoreHome || 0} - ${match.scoreAway || 0}*\n\n`;
+            text += `📅 ${today}\n\n`;
+            if (isHome) {
+                text += `⚽ *${team.naam} - ${opponent}*\n`;
+                text += `📊 *Eindstand: ${match.scoreHome || 0} - ${match.scoreAway || 0}*\n\n`;
+            } else {
+                text += `⚽ *${opponent} - ${team.naam}*\n`;
+                text += `📊 *Eindstand: ${match.scoreAway || 0} - ${match.scoreHome || 0}*\n\n`;
+            }
             
             if (notes.length === 0) {
                 text += `Geen notities`;
@@ -1894,8 +1925,77 @@
             btn.classList.toggle('away', match.isHome === false);
         }
         
+        // Saved match reports
+        function getSavedMatches() { 
+            return JSON.parse(localStorage.getItem(`jo10trainer_${currentTeam}_saved`) || '[]'); 
+        }
+        function setSavedMatches(data) { 
+            localStorage.setItem(`jo10trainer_${currentTeam}_saved`, JSON.stringify(data));
+            if (firebaseConnected) {
+                db.ref(fbPath('saved')).set(data).catch(e => console.log('Firebase sync error:', e));
+            }
+        }
+        
+        function saveMatchReport() {
+            const team = teams[currentTeam];
+            const match = getMatch();
+            const notes = getNotes();
+            const lineup = getLineup();
+            
+            if (!match.opponent) {
+                alert('Vul eerst een tegenstander in');
+                return;
+            }
+            
+            const report = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                opponent: match.opponent,
+                isHome: match.isHome !== false,
+                scoreHome: match.scoreHome || 0,
+                scoreAway: match.scoreAway || 0,
+                notes: [...notes],
+                lineup: {...lineup}
+            };
+            
+            const saved = getSavedMatches();
+            saved.unshift(report);
+            setSavedMatches(saved);
+            renderSavedMatches();
+            showToast('💾 Wedstrijdverslag opgeslagen!');
+        }
+        
+        function renderSavedMatches() {
+            const saved = getSavedMatches();
+            const team = teams[currentTeam];
+            
+            if (saved.length === 0) {
+                document.getElementById('savedMatches').innerHTML = '<p style="font-size:0.75em;opacity:0.5;">Nog geen opgeslagen wedstrijden</p>';
+                return;
+            }
+            
+            document.getElementById('savedMatches').innerHTML = saved.map((m, i) => {
+                const date = new Date(m.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+                const score = m.isHome ? `${m.scoreHome}-${m.scoreAway}` : `${m.scoreAway}-${m.scoreHome}`;
+                const vs = m.isHome ? `${team.naam} - ${m.opponent}` : `${m.opponent} - ${team.naam}`;
+                return `<div style="background:rgba(0,0,0,0.2);padding:8px 10px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:0.8em;">
+                    <div><strong>${date}</strong> ${vs} <span style="color:#FFD700">${score}</span></div>
+                    <button onclick="deleteMatchReport(${i})" style="background:none;border:none;color:#e74c3c;cursor:pointer;">🗑️</button>
+                </div>`;
+            }).join('');
+        }
+        
+        function deleteMatchReport(index) {
+            if (!confirm('Wedstrijdverslag verwijderen? Dit kan niet ongedaan gemaakt worden.')) return;
+            const saved = getSavedMatches();
+            saved.splice(index, 1);
+            setSavedMatches(saved);
+            renderSavedMatches();
+            showToast('🗑️ Verwijderd');
+        }
+        
         function newMatch() {
-            if (!confirm('Nieuwe wedstrijd starten? Dit reset opstellingen, notities en score.')) return;
+            if (!confirm('Nieuwe wedstrijd starten? Dit reset opstellingen, notities en score.\n\nTip: Sla eerst het wedstrijdverslag op!')) return;
             
             // Reset match data
             setMatch({ opponent: '', scoreHome: 0, scoreAway: 0, startTime: '09:30', isHome: true });
@@ -1925,6 +2025,7 @@
         setupFirebaseListeners();
         updateUI();
         loadMatchSettings();
+        renderSavedMatches();
         
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
