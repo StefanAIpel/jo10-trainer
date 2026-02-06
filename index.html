@@ -1610,8 +1610,8 @@
             // Voetbal volgorde: K=1, RV=2, LV=3, M=4, RA=5, LA=6
             const positionOrder = ['K', 'RV', 'LV', 'CV', 'M', 'RA', 'LA', 'RM', 'CM', 'LM', 'RCM', 'LCM', 'SP'];
             
-            let text = `⚽ ${team.naam} vs ${match.opponent || '?'}\n`;
-            text += `📊 Formatie: ${currentFormation}\n\n`;
+            let text = `⚽ *${team.naam} vs ${match.opponent || '?'}*\n`;
+            text += `📊 Formatie: ${currentFormation}\n`;
             
             for (let q = 1; q <= 4; q++) {
                 const l = lineup[q] || {};
@@ -1622,7 +1622,7 @@
                 const players = sortedEntries.map(([k,v]) => `${k}:${v}`).join(' | ');
                 const onField = Object.values(l).filter(p => p);
                 const bench = available.filter(p => !onField.includes(p));
-                text += `📋 K${q}: ${players || '-'}\n`;
+                text += `\n📋 K${q}: ${players || '-'}\n`;
                 if (bench.length) text += `   🪑 ${bench.join(', ')}\n`;
             }
             
