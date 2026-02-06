@@ -111,6 +111,7 @@
             align-items: center;
             gap: 10px;
             font-size: 0.8em;
+            flex-wrap: wrap;
         }
         .opponent-bar label { color: rgba(255,255,255,0.7); }
         .opponent-bar input {
@@ -122,8 +123,65 @@
             color: #FFD700;
             font-size: 0.9em;
             font-weight: 600;
+            min-width: 100px;
+        }
+        .opponent-bar input[type="time"] {
+            flex: none;
+            min-width: auto;
         }
         .opponent-bar input::placeholder { color: rgba(255,215,0,0.5); }
+        .home-away-btn {
+            padding: 6px 10px;
+            background: rgba(39,174,96,0.2);
+            border: 1px solid rgba(39,174,96,0.4);
+            border-radius: 6px;
+            color: #58d68d;
+            font-size: 0.8em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .home-away-btn.away {
+            background: rgba(231,76,60,0.2);
+            border-color: rgba(231,76,60,0.4);
+            color: #e74c3c;
+        }
+        
+        /* MATCH CLOCK */
+        .match-clock {
+            background: rgba(0,0,0,0.4);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.85em;
+        }
+        .clock-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #FFD700;
+            min-width: 80px;
+            text-align: center;
+        }
+        .clock-quarter {
+            background: rgba(255,215,0,0.2);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #FFD700;
+        }
+        .clock-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .clock-btn.play { background: #27ae60; color: white; }
+        .clock-btn.pause { background: #f39c12; color: white; }
+        .clock-btn.stop { background: #e74c3c; color: white; }
         
         .tabs {
             display: flex;
@@ -903,8 +961,17 @@
     </div>
     
     <div class="opponent-bar">
+        <button class="home-away-btn" id="homeAwayBtn" onclick="toggleHomeAway()">🏠 Thuis</button>
         <label>vs</label>
         <input type="text" id="opponentInput" placeholder="Tegenstander..." oninput="updateOpponent()" onchange="updateOpponent()">
+        <input type="time" id="startTimeInput" value="09:30" onchange="updateStartTime()" style="width:70px;">
+    </div>
+    
+    <div class="match-clock" id="matchClock">
+        <button class="clock-btn play" id="clockPlayBtn" onclick="toggleClock()">▶️</button>
+        <div class="clock-display" id="clockDisplay">00:00</div>
+        <div class="clock-quarter" id="clockQuarter">K1</div>
+        <button class="clock-btn stop" onclick="resetClock()">⏹️</button>
     </div>
     
     <div class="tabs">
@@ -979,7 +1046,7 @@
             <button class="note-btn goal" onclick="addNote('goal')"><span class="icon">⚽</span>Goal</button>
             <button class="note-btn assist" onclick="addNote('assist')"><span class="icon">👟</span>Assist</button>
             <button class="note-btn good" onclick="addNote('good')"><span class="icon">⭐</span>Goed</button>
-            <button class="note-btn improve" onclick="addNote('improve')"><span class="icon">📈</span>Beter</button>
+            <button class="note-btn improve" onclick="addNote('improve')"><span class="icon">📈</span>Kan beter</button>
             <button class="note-btn injury" onclick="addNote('injury')"><span class="icon">🏥</span>Blessure</button>
             <button class="note-btn other" onclick="addNote('other')"><span class="icon">📝</span>Anders</button>
         </div>
@@ -1667,9 +1734,96 @@
             }
         }
         
+        // MATCH CLOCK
+        let clockInterval = null;
+        let clockSeconds = 0;
+        let clockRunning = false;
+        let clockQuarter = 1;
+        const QUARTER_DURATION = 12.5 * 60; // 12.5 min in seconds
+        const SHORT_PAUSE = 3.5 * 60; // 3.5 min
+        const LONG_PAUSE = 5 * 60; // 5 min between K2-K3
+        
+        function toggleClock() {
+            if (clockRunning) {
+                pauseClock();
+            } else {
+                startClock();
+            }
+        }
+        
+        function startClock() {
+            clockRunning = true;
+            document.getElementById('clockPlayBtn').textContent = '⏸️';
+            document.getElementById('clockPlayBtn').className = 'clock-btn pause';
+            
+            clockInterval = setInterval(() => {
+                clockSeconds++;
+                updateClockDisplay();
+                
+                // Auto advance quarters
+                const quarterTime = clockSeconds % Math.ceil(QUARTER_DURATION + (clockQuarter === 2 ? LONG_PAUSE : SHORT_PAUSE));
+                if (clockSeconds > 0 && quarterTime === 0 && clockQuarter < 4) {
+                    clockQuarter++;
+                    document.getElementById('clockQuarter').textContent = `K${clockQuarter}`;
+                    // Also update the quarter tab
+                    document.querySelectorAll('.quarter-tab').forEach((t, i) => {
+                        t.classList.toggle('active', i + 1 === clockQuarter);
+                    });
+                    currentQuarter = clockQuarter;
+                    renderLineup();
+                }
+            }, 1000);
+        }
+        
+        function pauseClock() {
+            clockRunning = false;
+            clearInterval(clockInterval);
+            document.getElementById('clockPlayBtn').textContent = '▶️';
+            document.getElementById('clockPlayBtn').className = 'clock-btn play';
+        }
+        
+        function resetClock() {
+            pauseClock();
+            clockSeconds = 0;
+            clockQuarter = 1;
+            updateClockDisplay();
+            document.getElementById('clockQuarter').textContent = 'K1';
+        }
+        
+        function updateClockDisplay() {
+            const mins = Math.floor(clockSeconds / 60);
+            const secs = clockSeconds % 60;
+            document.getElementById('clockDisplay').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function toggleHomeAway() {
+            const btn = document.getElementById('homeAwayBtn');
+            const match = getMatch();
+            match.isHome = !match.isHome;
+            btn.textContent = match.isHome ? '🏠 Thuis' : '🚗 Uit';
+            btn.classList.toggle('away', !match.isHome);
+            setMatch(match);
+        }
+        
+        function updateStartTime() {
+            const match = getMatch();
+            match.startTime = document.getElementById('startTimeInput').value;
+            setMatch(match);
+        }
+        
+        function loadMatchSettings() {
+            const match = getMatch();
+            document.getElementById('startTimeInput').value = match.startTime || '09:30';
+            const btn = document.getElementById('homeAwayBtn');
+            btn.textContent = match.isHome !== false ? '🏠 Thuis' : '🚗 Uit';
+            btn.classList.toggle('away', match.isHome === false);
+        }
+        
         // Init
         setupFirebaseListeners();
         updateUI();
+        loadMatchSettings();
         
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
