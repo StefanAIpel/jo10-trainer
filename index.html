@@ -944,9 +944,9 @@
         
         <!-- Mix selectie (alleen bij 8v8) -->
         <div class="mix-section" id="mixSection" style="display:none;">
-            <div class="mix-title">👥 Selecteer spelers (max 10)</div>
+            <div class="mix-title">👥 Selecteer spelers (max 12)</div>
             <div class="mix-players" id="mixPlayers"></div>
-            <div class="mix-count" id="mixCount">0/10 geselecteerd</div>
+            <div class="mix-count" id="mixCount">0/12 geselecteerd</div>
         </div>
         
         <div class="field" id="fieldContainer"></div>
@@ -1246,13 +1246,13 @@
                 const selected = mixSelected.includes(p);
                 return `<div class="mix-player ${selected ? 'selected' : ''}" onclick="toggleMixPlayer('${p}')">${p}</div>`;
             }).join('');
-            document.getElementById('mixCount').textContent = `${mixSelected.length}/10 geselecteerd`;
+            document.getElementById('mixCount').textContent = `${mixSelected.length}/12 geselecteerd`;
         }
         
         function toggleMixPlayer(name) {
             if (mixSelected.includes(name)) {
                 mixSelected = mixSelected.filter(p => p !== name);
-            } else if (mixSelected.length < 10) {
+            } else if (mixSelected.length < 12) {
                 mixSelected.push(name);
             }
             localStorage.setItem('jo10_mix_selected', JSON.stringify(mixSelected));
