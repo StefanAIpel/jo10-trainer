@@ -39,6 +39,15 @@
         }
         .header-text h1 { font-size: 0.85em; color: #0047AB; font-weight: 700; }
         .header-text p { font-size: 0.7em; color: #003380; }
+        .sync-status {
+            margin-left: auto;
+            font-size: 0.7em;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(0,71,171,0.2);
+            color: #0047AB;
+        }
+        .sync-status.online { background: rgba(39,174,96,0.2); color: #1e8449; }
         
         .team-select {
             display: flex;
@@ -142,6 +151,25 @@
             background: rgba(255,215,0,0.1);
         }
         
+        /* AUTO BUTTON */
+        .auto-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85em;
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .auto-btn:active { transform: scale(0.98); }
+        
         /* FORMATIE SELECTOR */
         .formation-selector {
             display: flex;
@@ -171,7 +199,7 @@
             background: linear-gradient(to bottom, #2d8a2d 0%, #1f6b1f 50%, #2d8a2d 100%);
             border-radius: 10px;
             padding: 12px 8px;
-            min-height: 320px;
+            min-height: 280px;
             border: 3px solid rgba(255,255,255,0.5);
             position: relative;
             overflow: hidden;
@@ -304,11 +332,6 @@
             border-color: #9b59b6;
             background: rgba(155,89,182,0.2);
             color: #bb8fce;
-        }
-        .mix-player.on-field {
-            border-color: #FFD700;
-            background: rgba(255,215,0,0.15);
-            color: #FFD700;
         }
         .mix-count {
             font-size: 0.7em;
@@ -511,7 +534,6 @@
             margin-bottom: 6px;
         }
         
-        /* PWA */
         @media (display-mode: standalone) {
             body { padding-top: env(safe-area-inset-top); }
         }
@@ -524,6 +546,7 @@
             <h1>VV Hooglanderveen Trainer</h1>
             <p>JO10 • Seizoen 25-26</p>
         </div>
+        <div class="sync-status" id="syncStatus">Offline</div>
     </div>
     
     <div class="team-select">
@@ -552,6 +575,9 @@
             <div class="quarter-tab" data-quarter="3">K3</div>
             <div class="quarter-tab" data-quarter="4">K4</div>
         </div>
+        
+        <!-- Auto opstelling knop -->
+        <button class="auto-btn" onclick="autoFillLineup()">🔄 Auto opstelling</button>
         
         <!-- Formatie selector (alleen bij 8v8) -->
         <div class="formation-selector" id="formationSelector" style="display:none;">
@@ -643,6 +669,18 @@
     </div>
 
     <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7xLl7h6k7Z0xHnA1v1c1pMN0V2L3L4M8",
+            authDomain: "jo10-14d44.firebaseapp.com",
+            databaseURL: "https://jo10-14d44-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "jo10-14d44",
+            storageBucket: "jo10-14d44.firebasestorage.app"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
         // Team data
         const teams = {
             'jo10-1': {
@@ -659,96 +697,66 @@
             },
             'mix': {
                 naam: '8v8 Mix', klasse: 'Vrije selectie', trainer: '-', manager: '-',
-                spelers: [] // Dynamisch gevuld
+                spelers: []
             }
         };
         
-        // Alle JO10 spelers voor mix
-        const allPlayers = [
-            ...teams['jo10-1'].spelers,
-            ...teams['jo10-2'].spelers,
-            ...teams['jo10-3'].spelers
-        ];
+        const allPlayers = [...teams['jo10-1'].spelers, ...teams['jo10-2'].spelers, ...teams['jo10-3'].spelers];
         
-        // Formaties: positie codes en hun veld posities
+        // Formaties
         const formations = {
-            // 6v6 voor teams (dobbelsteen 5: 1-2-1-2)
             '1-2-1-2': {
                 positions: ['K', 'LV', 'RV', 'M', 'LA', 'RA'],
-                layout: {
-                    attack: ['LA', 'RA'],
-                    midfield: ['M'],
-                    defense: ['LV', 'RV'],
-                    keeper: ['K']
-                }
+                layout: { attack: ['LA', 'RA'], midfield: ['M'], defense: ['LV', 'RV'], keeper: ['K'] }
             },
-            // 8v8 formaties voor mix
             '2-3-2': {
                 positions: ['K', 'LV', 'RV', 'LM', 'CM', 'RM', 'LA', 'RA'],
-                layout: {
-                    attack: ['LA', 'RA'],
-                    midfield: ['LM', 'CM', 'RM'],
-                    defense: ['LV', 'RV'],
-                    keeper: ['K']
-                }
+                layout: { attack: ['LA', 'RA'], midfield: ['LM', 'CM', 'RM'], defense: ['LV', 'RV'], keeper: ['K'] }
             },
             '3-2-2': {
                 positions: ['K', 'LV', 'CV', 'RV', 'LM', 'RM', 'LA', 'RA'],
-                layout: {
-                    attack: ['LA', 'RA'],
-                    midfield: ['LM', 'RM'],
-                    defense: ['LV', 'CV', 'RV'],
-                    keeper: ['K']
-                }
+                layout: { attack: ['LA', 'RA'], midfield: ['LM', 'RM'], defense: ['LV', 'CV', 'RV'], keeper: ['K'] }
             },
             '2-4-1': {
                 positions: ['K', 'LV', 'RV', 'LM', 'LCM', 'RCM', 'RM', 'SP'],
-                layout: {
-                    attack: ['SP'],
-                    midfield: ['LM', 'LCM', 'RCM', 'RM'],
-                    defense: ['LV', 'RV'],
-                    keeper: ['K']
-                }
+                layout: { attack: ['SP'], midfield: ['LM', 'LCM', 'RCM', 'RM'], defense: ['LV', 'RV'], keeper: ['K'] }
             },
             '3-3-1': {
                 positions: ['K', 'LV', 'CV', 'RV', 'LM', 'CM', 'RM', 'SP'],
-                layout: {
-                    attack: ['SP'],
-                    midfield: ['LM', 'CM', 'RM'],
-                    defense: ['LV', 'CV', 'RV'],
-                    keeper: ['K']
-                }
+                layout: { attack: ['SP'], midfield: ['LM', 'CM', 'RM'], defense: ['LV', 'CV', 'RV'], keeper: ['K'] }
             }
         };
         
         let currentTeam = 'jo10-1';
         let currentQuarter = 1;
-        let currentFormation = '2-3-1';
+        let currentFormation = '1-2-1-2';
         let selectedPosition = null;
         let pendingNote = null;
         let mixSelected = JSON.parse(localStorage.getItem('jo10_mix_selected') || '[]');
+        let firebaseConnected = false;
         
-        // Per team storage keys
-        function getKey(suffix) { return `jo10trainer_${currentTeam}_${suffix}`; }
+        // Firebase paths
+        function fbPath(suffix) { return `trainer/${currentTeam}/${suffix}`; }
         
-        function getLineup() {
-            return JSON.parse(localStorage.getItem(getKey('lineup'))) || createEmptyLineup();
+        // Data functions with Firebase sync
+        function getData(key, defaultVal) {
+            return JSON.parse(localStorage.getItem(`jo10trainer_${currentTeam}_${key}`) || JSON.stringify(defaultVal));
         }
-        function setLineup(data) {
-            localStorage.setItem(getKey('lineup'), JSON.stringify(data));
+        
+        function setData(key, data) {
+            localStorage.setItem(`jo10trainer_${currentTeam}_${key}`, JSON.stringify(data));
+            // Sync to Firebase
+            if (firebaseConnected) {
+                db.ref(fbPath(key)).set(data).catch(e => console.log('Firebase sync error:', e));
+            }
         }
-        function getNotes() {
-            return JSON.parse(localStorage.getItem(getKey('notes'))) || [];
-        }
-        function setNotes(data) {
-            localStorage.setItem(getKey('notes'), JSON.stringify(data));
-        }
-        function getMatch() {
-            return JSON.parse(localStorage.getItem(getKey('match'))) || { opponent: '', scoreHome: 0, scoreAway: 0 };
-        }
-        function setMatch(data) {
-            localStorage.setItem(getKey('match'), JSON.stringify(data));
-        }
+        
+        function getLineup() { return getData('lineup', createEmptyLineup()); }
+        function setLineup(data) { setData('lineup', data); }
+        function getNotes() { return getData('notes', []); }
+        function setNotes(data) { setData('notes', data); }
+        function getMatch() { return getData('match', { opponent: '', scoreHome: 0, scoreAway: 0 }); }
+        function setMatch(data) { setData('match', data); }
         
         function createEmptyLineup() {
             const f = formations[currentFormation];
@@ -757,12 +765,69 @@
             return { 1: {...empty}, 2: {...empty}, 3: {...empty}, 4: {...empty} };
         }
         
+        // Firebase connection
+        db.ref('.info/connected').on('value', snap => {
+            firebaseConnected = snap.val() === true;
+            document.getElementById('syncStatus').textContent = firebaseConnected ? '☁️ Sync' : 'Offline';
+            document.getElementById('syncStatus').className = 'sync-status' + (firebaseConnected ? ' online' : '');
+        });
+        
+        // Listen for Firebase changes
+        function setupFirebaseListeners() {
+            db.ref(fbPath('lineup')).on('value', snap => {
+                if (snap.val()) {
+                    localStorage.setItem(`jo10trainer_${currentTeam}_lineup`, JSON.stringify(snap.val()));
+                    renderLineup();
+                }
+            });
+            db.ref(fbPath('match')).on('value', snap => {
+                if (snap.val()) {
+                    localStorage.setItem(`jo10trainer_${currentTeam}_match`, JSON.stringify(snap.val()));
+                    updateMatchDisplay();
+                }
+            });
+            db.ref(fbPath('notes')).on('value', snap => {
+                if (snap.val()) {
+                    localStorage.setItem(`jo10trainer_${currentTeam}_notes`, JSON.stringify(snap.val()));
+                    renderNotes();
+                }
+            });
+        }
+        
+        function updateMatchDisplay() {
+            const match = getMatch();
+            document.getElementById('opponentInput').value = match.opponent || '';
+            document.getElementById('scoreHome').textContent = match.scoreHome || 0;
+            document.getElementById('scoreAway').textContent = match.scoreAway || 0;
+            document.getElementById('awayTeam').textContent = (match.opponent || 'TEG').split(' ')[0].substring(0, 6);
+            document.getElementById('infoOpponent').textContent = match.opponent || '-';
+        }
+        
+        // AUTO OPSTELLING
+        function autoFillLineup() {
+            const team = teams[currentTeam];
+            const f = formations[currentFormation];
+            const lineup = getLineup();
+            
+            // Shuffle spelers
+            const shuffled = [...team.spelers].sort(() => Math.random() - 0.5);
+            
+            // Vul posities voor dit kwart
+            const quarterLineup = {};
+            f.positions.forEach((pos, i) => {
+                quarterLineup[pos] = shuffled[i] || '';
+            });
+            
+            lineup[currentQuarter] = quarterLineup;
+            setLineup(lineup);
+            renderLineup();
+        }
+        
         function selectTeam(teamId) {
             currentTeam = teamId;
             document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
             document.querySelector(`[data-team="${teamId}"]`).classList.add('active');
             
-            // Show/hide mix elements
             const isMix = teamId === 'mix';
             document.getElementById('formationSelector').style.display = isMix ? 'flex' : 'none';
             document.getElementById('mixSection').style.display = isMix ? 'block' : 'none';
@@ -773,9 +838,10 @@
                 renderMixPlayers();
                 teams.mix.spelers = mixSelected;
             } else {
-                currentFormation = '1-2-1-2'; // 6v6 dobbelsteen
+                currentFormation = '1-2-1-2';
             }
             
+            setupFirebaseListeners();
             updateUI();
         }
         
@@ -810,28 +876,21 @@
             const match = getMatch();
             match.opponent = document.getElementById('opponentInput').value;
             setMatch(match);
-            updateUI();
+            updateMatchDisplay();
         }
         
         function updateUI() {
             const team = teams[currentTeam];
             const match = getMatch();
             
-            document.getElementById('opponentInput').value = match.opponent || '';
+            updateMatchDisplay();
             document.getElementById('homeTeam').textContent = team.naam;
-            document.getElementById('awayTeam').textContent = (match.opponent || 'TEG').split(' ')[0].substring(0, 6);
-            document.getElementById('scoreHome').textContent = match.scoreHome || 0;
-            document.getElementById('scoreAway').textContent = match.scoreAway || 0;
-            
-            // Info tab
             document.getElementById('infoTeamName').textContent = team.naam;
             document.getElementById('infoTrainer').textContent = team.trainer;
             document.getElementById('infoManager').textContent = team.manager;
             document.getElementById('infoPlayers').textContent = team.spelers.length;
-            document.getElementById('infoOpponent').textContent = match.opponent || '-';
             document.getElementById('infoFormation').textContent = currentFormation;
             
-            // Player select
             const select = document.getElementById('notePlayer');
             select.innerHTML = '<option value="">-- Speler --</option>' +
                 team.spelers.map(p => `<option value="${p}">${p}</option>`).join('');
@@ -922,8 +981,6 @@
                 localStorage.setItem('jo10_mix_formation', currentFormation);
                 updateFormationButtons();
                 renderField();
-                
-                // Reset lineup for new formation
                 const lineup = createEmptyLineup();
                 setLineup(lineup);
                 renderLineup();
@@ -956,9 +1013,7 @@
             closeModal();
         }
         
-        function closeModal() {
-            document.getElementById('playerModal').classList.remove('active');
-        }
+        function closeModal() { document.getElementById('playerModal').classList.remove('active'); }
         
         function addNote(type) {
             const player = document.getElementById('notePlayer').value;
@@ -1000,9 +1055,7 @@
             
             const notes = getNotes();
             notes.unshift({
-                type: 'opponent_goal',
-                player: 'Tegenstander',
-                text: '',
+                type: 'opponent_goal', player: 'Tegenstander', text: '',
                 time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
                 quarter: currentQuarter
             });
@@ -1010,9 +1063,7 @@
             renderNotes();
         }
         
-        function closeNoteModal() {
-            document.getElementById('noteModal').classList.remove('active');
-        }
+        function closeNoteModal() { document.getElementById('noteModal').classList.remove('active'); }
         
         function shareLineup() {
             const team = teams[currentTeam];
@@ -1040,9 +1091,9 @@
         }
         
         // Init
+        setupFirebaseListeners();
         updateUI();
         
-        // Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
