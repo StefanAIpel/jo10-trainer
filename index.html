@@ -1048,7 +1048,7 @@
             <button class="note-btn good" onclick="addNote('good')"><span class="icon">⭐</span>Goed</button>
             <button class="note-btn improve" onclick="addNote('improve')"><span class="icon">📈</span>Kan beter</button>
             <button class="note-btn injury" onclick="addNote('injury')"><span class="icon">🏥</span>Blessure</button>
-            <button class="note-btn other" onclick="addNote('other')"><span class="icon">📝</span>Anders</button>
+            <button class="note-btn other" onclick="addNote('sub')"><span class="icon">🔄</span>Wissel</button>
         </div>
         
         <button class="opponent-goal-btn" onclick="addOpponentGoal()">🥅 Tegendoelpunt</button>
@@ -1076,6 +1076,11 @@
             <div class="info-row"><span class="info-label">Trainer:</span><span class="info-value" id="infoTrainer">-</span></div>
             <div class="info-row"><span class="info-label">Manager:</span><span class="info-value" id="infoManager">-</span></div>
             <div class="info-row"><span class="info-label">Spelers:</span><span class="info-value" id="infoPlayers">-</span></div>
+        </div>
+        <div class="info-card" style="background:rgba(231,76,60,0.1);border-color:rgba(231,76,60,0.3);">
+            <h3 style="color:#e74c3c;">🔄 Nieuwe wedstrijd</h3>
+            <p style="font-size:0.8em;opacity:0.8;margin-bottom:10px;">Reset opstellingen, notities en score voor een nieuwe wedstrijd.</p>
+            <button class="clear-btn" onclick="newMatch()" style="width:100%;">🆕 Start nieuwe wedstrijd</button>
         </div>
     </div>
     
@@ -1481,7 +1486,7 @@
         
         function renderNotes() {
             const notes = getNotes();
-            const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅' };
+            const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅', sub:'🔄' };
             document.getElementById('notesList').innerHTML = notes.map((n, i) => `
                 <div class="note-item ${n.type}">
                     <div class="note-content">
@@ -1624,7 +1629,7 @@
             const player = document.getElementById('notePlayer').value;
             if (!player && type !== 'other') { alert('Selecteer eerst een speler'); return; }
             pendingNote = { type, player };
-            const titles = { goal:'⚽ Goal', assist:'👟 Assist', injury:'🏥 Blessure', good:'⭐ Goed moment', improve:'📈 Aandachtspunt', other:'📝 Notitie' };
+            const titles = { goal:'⚽ Goal', assist:'👟 Assist', injury:'🏥 Blessure', good:'⭐ Goed moment', improve:'📈 Kan beter', sub:'🔄 Wissel', other:'📝 Notitie' };
             document.getElementById('noteModalTitle').textContent = titles[type] + (player ? ` - ${player}` : '');
             document.getElementById('noteText').value = '';
             document.getElementById('noteModal').classList.add('active');
@@ -1727,8 +1732,8 @@
             if (notes.length === 0) {
                 text += `Geen notities`;
             } else {
-                const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅' };
-                const typeLabels = { goal:'Goal', assist:'Assist', injury:'Blessure', good:'Goed moment', improve:'Kan beter', other:'Notitie', opponent_goal:'Tegendoelpunt' };
+                const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅', sub:'🔄' };
+                const typeLabels = { goal:'Goal', assist:'Assist', injury:'Blessure', good:'Goed moment', improve:'Kan beter', other:'Notitie', opponent_goal:'Tegendoelpunt', sub:'Wissel' };
                 
                 // Sort by match minute
                 const sorted = [...notes].sort((a, b) => (a.matchMinute || 0) - (b.matchMinute || 0));
@@ -1887,6 +1892,33 @@
             const btn = document.getElementById('homeAwayBtn');
             btn.textContent = match.isHome !== false ? '🏠 Thuis' : '🚗 Uit';
             btn.classList.toggle('away', match.isHome === false);
+        }
+        
+        function newMatch() {
+            if (!confirm('Nieuwe wedstrijd starten? Dit reset opstellingen, notities en score.')) return;
+            
+            // Reset match data
+            setMatch({ opponent: '', scoreHome: 0, scoreAway: 0, startTime: '09:30', isHome: true });
+            
+            // Reset lineup
+            const f = formations[currentFormation];
+            const empty = {};
+            f.positions.forEach(p => empty[p] = '');
+            setLineup({ 1: {...empty}, 2: {...empty}, 3: {...empty}, 4: {...empty} });
+            
+            // Reset notes
+            setNotes([]);
+            
+            // Reset clock
+            resetClock();
+            
+            // Reset absent
+            setAbsent([]);
+            
+            // Update UI
+            document.getElementById('opponentInput').value = '';
+            updateUI();
+            showToast('🆕 Nieuwe wedstrijd gestart!');
         }
         
         // Init
