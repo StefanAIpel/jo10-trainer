@@ -48,6 +48,28 @@
             color: #0047AB;
         }
         .sync-status.online { background: rgba(39,174,96,0.2); color: #1e8449; }
+        .sync-status.saving { background: rgba(255,215,0,0.3); color: #d4ac0d; }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            z-index: 999;
+            display: none;
+            animation: fadeInOut 2s ease;
+        }
+        .toast.show { display: block; }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            15%, 85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
         
         .team-select {
             display: flex;
@@ -988,6 +1010,8 @@
         </div>
     </div>
     
+    <div class="toast" id="toast">✓ Opgeslagen</div>
+    
     <!-- MODALS -->
     <div class="modal" id="playerModal">
         <div class="modal-content">
@@ -1092,11 +1116,26 @@
         }
         
         function setData(key, data) {
-            localStorage.setItem(`jo10trainer_${currentTeam}_${key}`, JSON.stringify(data));
+            try {
+                localStorage.setItem(`jo10trainer_${currentTeam}_${key}`, JSON.stringify(data));
+                showToast('✓ Opgeslagen');
+            } catch (e) {
+                showToast('⚠️ Opslaan mislukt (private mode?)');
+                console.error('localStorage error:', e);
+            }
             // Sync to Firebase
             if (firebaseConnected) {
                 db.ref(fbPath(key)).set(data).catch(e => console.log('Firebase sync error:', e));
             }
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('show');
+            void toast.offsetWidth; // Force reflow
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
         }
         
         function getLineup() { return getData('lineup', createEmptyLineup()); }
