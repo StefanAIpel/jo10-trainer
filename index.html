@@ -688,14 +688,15 @@
         }
         .modal textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background: rgba(0,0,0,0.2);
             border: 1px solid rgba(255,215,0,0.3);
             border-radius: 6px;
             color: white;
-            min-height: 70px;
+            min-height: 80px;
             margin-bottom: 8px;
             font-family: inherit;
+            font-size: 16px;
         }
         .modal-confirm {
             width: 100%;
@@ -1133,7 +1134,7 @@
                 </select>
                 <input type="number" id="subMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
             </div>
-            <textarea id="subText" placeholder="Toelichting (optioneel)..." style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:50px;margin-bottom:8px;"></textarea>
+            <textarea id="subText" placeholder="Toelichting (optioneel)..." style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:70px;margin-bottom:8px;font-size:16px;"></textarea>
             <button class="modal-confirm" onclick="confirmSub()">✓ Opslaan</button>
             <button class="modal-close" onclick="closeSubModal()">Annuleren</button>
         </div>
@@ -1156,7 +1157,7 @@
                 </select>
                 <input type="number" id="injuryMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
             </div>
-            <textarea id="injuryText" placeholder="Wat is er gebeurd?..." style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:50px;margin-bottom:8px;"></textarea>
+            <textarea id="injuryText" placeholder="Wat is er gebeurd?..." style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:70px;margin-bottom:8px;font-size:16px;"></textarea>
             <button class="modal-confirm" onclick="confirmInjury()">✓ Opslaan</button>
             <button class="modal-close" onclick="closeInjuryModal()">Annuleren</button>
         </div>
