@@ -830,26 +830,36 @@
         
         /* LARGE DESKTOP - Zelfde opbouw als mobiel, maar groter */
         @media (min-width: 1200px) {
-            .content { max-width: 700px; }
+            .content { max-width: 650px; }
+            
+            .absent-section { padding: 12px 16px; }
+            .absent-title { font-size: 0.8em; margin-bottom: 10px; }
+            .absent-players { 
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .absent-toggle { padding: 6px 14px; font-size: 0.8em; }
+            
+            .quarter-tabs { max-width: 500px; margin: 0 auto 16px; }
             
             .field { 
-                min-height: 420px;
-                max-width: 600px;
+                min-height: 380px;
+                max-width: 550px;
                 margin: 0 auto;
             }
             
-            .position { min-width: 90px; padding: 12px 10px; }
-            .position .player-name { font-size: 0.95em; }
+            .position { min-width: 80px; padding: 10px 8px; }
+            .position .player-name { font-size: 0.9em; }
             
             /* Spelers meer verspreid */
-            .position-row { 
-                padding: 0 20px;
-                justify-content: space-between;
-            }
-            .position-row.attack { margin-top: 20px; padding: 0 80px; }
-            .position-row.midfield { margin: 55px 0; padding: 0 30px; }
-            .position-row.defense { margin-bottom: 15px; padding: 0 60px; }
-            .position-row.keeper { margin-top: 30px; justify-content: center; }
+            .position-row.attack { margin-top: 16px; padding: 0 60px; }
+            .position-row.midfield { margin: 45px 0; padding: 0 20px; }
+            .position-row.defense { margin-bottom: 12px; padding: 0 50px; }
+            .position-row.keeper { margin-top: 25px; }
+            
+            .bench { max-width: 550px; margin: 16px auto 0; }
+            .share-btn { max-width: 550px; margin: 16px auto 0; display: block; }
         }
     </style>
 </head>
