@@ -2170,9 +2170,74 @@
                 const vs = m.isHome ? `${team.naam} - ${m.opponent}` : `${m.opponent} - ${team.naam}`;
                 return `<div style="background:rgba(0,0,0,0.2);padding:8px 10px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:0.8em;">
                     <div><strong>${date}</strong> ${vs} <span style="color:#FFD700">${score}</span></div>
-                    <button onclick="deleteMatchReport(${i})" style="background:none;border:none;color:#e74c3c;cursor:pointer;">🗑️</button>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="shareSavedMatch(${i})" style="background:none;border:none;color:#FFD700;cursor:pointer;font-size:1.1em;">📤</button>
+                        <button onclick="deleteMatchReport(${i})" style="background:none;border:none;color:#e74c3c;cursor:pointer;">🗑️</button>
+                    </div>
                 </div>`;
             }).join('');
+        }
+        
+        function shareSavedMatch(index) {
+            const saved = getSavedMatches();
+            const m = saved[index];
+            if (!m) return;
+            
+            const team = teams[currentTeam];
+            const matchDate = new Date(m.date).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            let text = `📋 *WEDSTRIJDVERSLAG*\n📅 ${matchDate}\n\n`;
+            
+            if (m.isHome) {
+                text += `⚽ *${team.naam} - ${m.opponent}*\n`;
+                text += `📊 *Eindstand: ${m.scoreHome} - ${m.scoreAway}*\n\n`;
+            } else {
+                text += `⚽ *${m.opponent} - ${team.naam}*\n`;
+                text += `📊 *Eindstand: ${m.scoreAway} - ${m.scoreHome}*\n\n`;
+            }
+            
+            // Lineup per kwart
+            if (m.lineup) {
+                text += `📋 *OPSTELLINGEN*\n`;
+                for (let q = 1; q <= 4; q++) {
+                    const l = m.lineup[q] || {};
+                    const players = Object.entries(l).filter(([k,v]) => v).map(([k,v]) => `${k}:${v}`).join(' | ');
+                    if (players) text += `K${q}: ${players}\n`;
+                }
+                text += `\n`;
+            }
+            
+            // Notes chronologisch
+            if (m.notes && m.notes.length > 0) {
+                text += `📝 *NOTITIES*\n`;
+                const icons = { goal:'⚽', assist:'👟', injury:'🏥', good:'⭐', improve:'📈', other:'📝', opponent_goal:'🥅', sub:'🔄' };
+                
+                const sorted = [...m.notes].sort((a, b) => (a.matchMinute || 0) - (b.matchMinute || 0));
+                sorted.forEach(n => {
+                    const min = n.matchMinute !== undefined ? `${n.matchMinute}'` : `K${n.quarter}`;
+                    let line = `${icons[n.type] || '📝'} *${min}* `;
+                    
+                    if (n.type === 'sub' && n.playerOut && n.playerIn) {
+                        line += `${n.playerOut} ➜ ${n.playerIn}`;
+                    } else if (n.type === 'injury') {
+                        line += n.player;
+                        if (n.replacement) line += ` ➜ ${n.replacement}`;
+                    } else {
+                        line += n.player || '';
+                    }
+                    if (n.text) line += ` - ${n.text}`;
+                    text += line + `\n`;
+                });
+            } else {
+                text += `Geen notities\n`;
+            }
+            
+            if (navigator.share) {
+                navigator.share({ title: `${team.naam} Wedstrijdverslag`, text });
+            } else {
+                navigator.clipboard.writeText(text);
+                showToast('📋 Gekopieerd!');
+            }
         }
         
         function deleteMatchReport(index) {
