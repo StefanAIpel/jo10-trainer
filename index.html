@@ -1163,6 +1163,41 @@
         </div>
     </div>
 
+    <!-- Goal Modal -->
+    <div class="modal" id="goalModal">
+        <div class="modal-content">
+            <div class="modal-title">⚽ Goal</div>
+            <select id="goalPlayer" style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;margin-bottom:8px;">
+                <option value="">-- Wie scoorde? --</option>
+            </select>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="goalQuarter" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+                    <option value="1">K1</option><option value="2">K2</option><option value="3">K3</option><option value="4">K4</option>
+                </select>
+                <input type="number" id="goalMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+            </div>
+            <textarea id="goalText" placeholder="Toelichting (optioneel)..." style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:70px;margin-bottom:8px;font-size:16px;"></textarea>
+            <button class="modal-confirm" onclick="confirmGoal()">✓ Opslaan</button>
+            <button class="modal-close" onclick="closeGoalModal()">Annuleren</button>
+        </div>
+    </div>
+
+    <!-- Tegendoelpunt Modal -->
+    <div class="modal" id="tegenModal">
+        <div class="modal-content">
+            <div class="modal-title">🥅 Tegendoelpunt</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="tegenQuarter" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+                    <option value="1">K1</option><option value="2">K2</option><option value="3">K3</option><option value="4">K4</option>
+                </select>
+                <input type="number" id="tegenMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+            </div>
+            <textarea id="tegenText" placeholder="Toelichting (optioneel)..." style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:70px;margin-bottom:8px;font-size:16px;"></textarea>
+            <button class="modal-confirm" onclick="confirmTegen()">✓ Opslaan</button>
+            <button class="modal-close" onclick="closeTegenModal()">Annuleren</button>
+        </div>
+    </div>
+
     <script>
         // Firebase config
         const firebaseConfig = {
@@ -1792,6 +1827,18 @@
         function closeModal() { document.getElementById('playerModal').classList.remove('active'); }
         
         function addNote(type) {
+            // Goal modal
+            if (type === 'goal') {
+                const available = getAvailablePlayers();
+                const options = available.map(p => `<option value="${p}">${p}</option>`).join('');
+                document.getElementById('goalPlayer').innerHTML = '<option value="">-- Wie scoorde? --</option>' + options;
+                document.getElementById('goalQuarter').value = clockQuarter;
+                document.getElementById('goalMinute').value = getMatchMinute();
+                document.getElementById('goalText').value = '';
+                document.getElementById('goalModal').classList.add('active');
+                return;
+            }
+            
             // Wissel modal
             if (type === 'sub') {
                 const team = teams[currentTeam];
@@ -1907,26 +1954,64 @@
         }
         
         function addOpponentGoal() {
+            document.getElementById('tegenQuarter').value = clockQuarter;
+            document.getElementById('tegenMinute').value = getMatchMinute();
+            document.getElementById('tegenText').value = '';
+            document.getElementById('tegenModal').classList.add('active');
+        }
+        
+        function closeNoteModal() { document.getElementById('noteModal').classList.remove('active'); }
+        function closeGoalModal() { document.getElementById('goalModal').classList.remove('active'); }
+        function closeTegenModal() { document.getElementById('tegenModal').classList.remove('active'); }
+        
+        function confirmGoal() {
+            const player = document.getElementById('goalPlayer').value;
+            if (!player) { alert('Selecteer een speler'); return; }
+            
+            const match = getMatch();
+            const isHome = match.isHome !== false;
+            match.scoreHome = (match.scoreHome || 0) + 1;
+            setMatch(match);
+            const displayElement = isHome ? 'scoreHome' : 'scoreAway';
+            document.getElementById(displayElement).textContent = match.scoreHome;
+            
+            const notes = getNotes();
+            notes.unshift({
+                type: 'goal',
+                player,
+                quarter: parseInt(document.getElementById('goalQuarter').value),
+                matchMinute: parseInt(document.getElementById('goalMinute').value) || getMatchMinute(),
+                text: document.getElementById('goalText').value,
+                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+            });
+            setNotes(notes);
+            renderNotes();
+            closeGoalModal();
+            showToast('⚽ Goal opgeslagen');
+        }
+        
+        function confirmTegen() {
             const match = getMatch();
             const isHome = match.isHome !== false;
             match.scoreAway = (match.scoreAway || 0) + 1;
             setMatch(match);
-            // Bij uitwedstrijd is display gespiegeld: tegenstander staat links (#scoreHome)
             const displayElement = isHome ? 'scoreAway' : 'scoreHome';
             document.getElementById(displayElement).textContent = match.scoreAway;
             
             const notes = getNotes();
             notes.unshift({
-                type: 'opponent_goal', player: 'Tegenstander', text: '',
-                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
-                quarter: currentQuarter,
-                matchMinute: getMatchMinute()
+                type: 'opponent_goal',
+                player: 'Tegenstander',
+                quarter: parseInt(document.getElementById('tegenQuarter').value),
+                matchMinute: parseInt(document.getElementById('tegenMinute').value) || getMatchMinute(),
+                text: document.getElementById('tegenText').value,
+                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
             });
             setNotes(notes);
             renderNotes();
+            closeTegenModal();
+            showToast('🥅 Tegendoelpunt opgeslagen');
         }
-        
-        function closeNoteModal() { document.getElementById('noteModal').classList.remove('active'); }
         
         function shareLineup() {
             const team = teams[currentTeam];
