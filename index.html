@@ -1665,18 +1665,20 @@
         function deleteNote(index) {
             const notes = getNotes();
             const note = notes[index];
+            const match = getMatch();
+            const isHome = match.isHome !== false;
             // Adjust score if deleting a goal
             if (note && note.type === 'goal') {
-                const match = getMatch();
                 match.scoreHome = Math.max(0, (match.scoreHome || 0) - 1);
                 setMatch(match);
-                document.getElementById('scoreHome').textContent = match.scoreHome;
+                const displayElement = isHome ? 'scoreHome' : 'scoreAway';
+                document.getElementById(displayElement).textContent = match.scoreHome;
             }
             if (note && note.type === 'opponent_goal') {
-                const match = getMatch();
                 match.scoreAway = Math.max(0, (match.scoreAway || 0) - 1);
                 setMatch(match);
-                document.getElementById('scoreAway').textContent = match.scoreAway;
+                const displayElement = isHome ? 'scoreAway' : 'scoreHome';
+                document.getElementById(displayElement).textContent = match.scoreAway;
             }
             notes.splice(index, 1);
             setNotes(notes);
@@ -1892,9 +1894,12 @@
             
             if (note.type === 'goal') {
                 const match = getMatch();
+                const isHome = match.isHome !== false;
                 match.scoreHome = (match.scoreHome || 0) + 1;
                 setMatch(match);
-                document.getElementById('scoreHome').textContent = match.scoreHome;
+                // Bij uitwedstrijd is display gespiegeld: wij staan rechts (#scoreAway)
+                const displayElement = isHome ? 'scoreHome' : 'scoreAway';
+                document.getElementById(displayElement).textContent = match.scoreHome;
             }
             
             renderNotes();
@@ -1903,9 +1908,12 @@
         
         function addOpponentGoal() {
             const match = getMatch();
+            const isHome = match.isHome !== false;
             match.scoreAway = (match.scoreAway || 0) + 1;
             setMatch(match);
-            document.getElementById('scoreAway').textContent = match.scoreAway;
+            // Bij uitwedstrijd is display gespiegeld: tegenstander staat links (#scoreHome)
+            const displayElement = isHome ? 'scoreAway' : 'scoreHome';
+            document.getElementById(displayElement).textContent = match.scoreAway;
             
             const notes = getNotes();
             notes.unshift({
