@@ -535,6 +535,7 @@
         }
         .note-btn:active { transform: scale(0.95); }
         .note-btn.goal { background: linear-gradient(135deg, #27ae60, #1e8449); color: white; }
+        .note-btn.tegen { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
         .note-btn.assist { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
         .note-btn.good { background: linear-gradient(135deg, #FFD700, #e6c200); color: #003380; }
         .note-btn.improve { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
@@ -1036,14 +1037,12 @@
         
         <div class="note-buttons">
             <button class="note-btn goal" onclick="addNote('goal')"><span class="icon">⚽</span>Goal</button>
+            <button class="note-btn tegen" onclick="addOpponentGoal()"><span class="icon">🥅</span>Tegen</button>
             <button class="note-btn assist" onclick="addNote('assist')"><span class="icon">👟</span>Assist</button>
             <button class="note-btn good" onclick="addNote('good')"><span class="icon">⭐</span>Goed</button>
             <button class="note-btn improve" onclick="addNote('improve')"><span class="icon">📈</span>Kan beter</button>
-            <button class="note-btn injury" onclick="addNote('injury')"><span class="icon">🏥</span>Blessure</button>
             <button class="note-btn other" onclick="addNote('sub')"><span class="icon">🔄</span>Wissel</button>
         </div>
-        
-        <button class="opponent-goal-btn" onclick="addOpponentGoal()">🥅 Tegendoelpunt</button>
         
         <div class="notes-list" id="notesList"></div>
         
