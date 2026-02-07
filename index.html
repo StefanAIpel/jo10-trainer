@@ -1978,12 +1978,25 @@
             const opponent = match.opponent || 'Tegenstander';
             let text = `📋 *WEDSTRIJDVERSLAG*\n`;
             text += `📅 ${today}\n\n`;
+            // Bereken tussenstand per helft
+            let h1Home = 0, h1Away = 0, h2Home = 0, h2Away = 0;
+            notes.forEach(n => {
+                const q = n.quarter || 1;
+                if (n.type === 'goal') {
+                    if (q <= 2) h1Home++; else h2Home++;
+                } else if (n.type === 'opponent_goal') {
+                    if (q <= 2) h1Away++; else h2Away++;
+                }
+            });
+            
             if (isHome) {
                 text += `⚽ *${team.naam} - ${opponent}*\n`;
-                text += `📊 *Eindstand: ${match.scoreHome || 0} - ${match.scoreAway || 0}*\n\n`;
+                text += `📊 *Eindstand: ${match.scoreHome || 0} - ${match.scoreAway || 0}*\n`;
+                text += `   H1: ${h1Home}-${h1Away} | H2: ${h2Home}-${h2Away}\n\n`;
             } else {
                 text += `⚽ *${opponent} - ${team.naam}*\n`;
-                text += `📊 *Eindstand: ${match.scoreAway || 0} - ${match.scoreHome || 0}*\n\n`;
+                text += `📊 *Eindstand: ${match.scoreAway || 0} - ${match.scoreHome || 0}*\n`;
+                text += `   H1: ${h1Away}-${h1Home} | H2: ${h2Away}-${h2Home}\n\n`;
             }
             
             if (notes.length === 0) {
