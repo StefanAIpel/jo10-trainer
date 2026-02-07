@@ -1919,7 +1919,8 @@
             notes.unshift({
                 type: 'opponent_goal', player: 'Tegenstander', text: '',
                 time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
-                quarter: currentQuarter
+                quarter: currentQuarter,
+                matchMinute: getMatchMinute()
             });
             setNotes(notes);
             renderNotes();
@@ -1995,7 +1996,9 @@
                 const sorted = [...notes].sort((a, b) => (a.matchMinute || 0) - (b.matchMinute || 0));
                 
                 sorted.forEach(n => {
-                    const min = n.matchMinute !== undefined ? `${n.matchMinute}'` : `K${n.quarter}`;
+                    // Toon kwart + minuut: "K2 12'" of alleen "K2" als geen minuut
+                    let min = `K${n.quarter || '?'}`;
+                    if (n.matchMinute !== undefined) min += ` ${n.matchMinute}'`;
                     let line = `${icons[n.type] || '📝'} *${min}* `;
                     
                     if (n.type === 'sub' && n.playerOut && n.playerIn) {
@@ -2357,7 +2360,9 @@
                 
                 const sorted = [...m.notes].sort((a, b) => (a.matchMinute || 0) - (b.matchMinute || 0));
                 sorted.forEach(n => {
-                    const min = n.matchMinute !== undefined ? `${n.matchMinute}'` : `K${n.quarter}`;
+                    // Toon kwart + minuut: "K2 12'" of alleen "K2" als geen minuut
+                    let min = `K${n.quarter || '?'}`;
+                    if (n.matchMinute !== undefined) min += ` ${n.matchMinute}'`;
                     let line = `${icons[n.type] || '📝'} *${min}* `;
                     
                     if (n.type === 'sub' && n.playerOut && n.playerIn) {
