@@ -1031,10 +1031,6 @@
             </div>
         </div>
         
-        <select class="player-select" id="notePlayer">
-            <option value="">-- Speler --</option>
-        </select>
-        
         <div class="note-buttons">
             <button class="note-btn goal" onclick="addNote('goal')"><span class="icon">⚽</span>Goal</button>
             <button class="note-btn tegen" onclick="addOpponentGoal()"><span class="icon">🥅</span>Tegen</button>
@@ -1167,7 +1163,7 @@
     <div class="modal" id="goalModal">
         <div class="modal-content">
             <div class="modal-title">⚽ Goal</div>
-            <select id="goalPlayer" style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;margin-bottom:8px;">
+            <select id="goalPlayer" style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;margin-bottom:8px;font-size:16px;">
                 <option value="">-- Wie scoorde? --</option>
             </select>
             <div style="display:flex;gap:8px;margin-bottom:8px;">
@@ -1176,7 +1172,7 @@
                 </select>
                 <input type="number" id="goalMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
             </div>
-            <textarea id="goalText" placeholder="Toelichting (optioneel)..." style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:70px;margin-bottom:8px;font-size:16px;"></textarea>
+            <textarea id="goalText" placeholder="Toelichting..." style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:50px;margin-bottom:8px;font-size:16px;"></textarea>
             <button class="modal-confirm" onclick="confirmGoal()">✓ Opslaan</button>
             <button class="modal-close" onclick="closeGoalModal()">Annuleren</button>
         </div>
@@ -1195,6 +1191,63 @@
             <textarea id="tegenText" placeholder="Toelichting (optioneel)..." style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:70px;margin-bottom:8px;font-size:16px;"></textarea>
             <button class="modal-confirm" onclick="confirmTegen()">✓ Opslaan</button>
             <button class="modal-close" onclick="closeTegenModal()">Annuleren</button>
+        </div>
+    </div>
+
+    <!-- Assist Modal -->
+    <div class="modal" id="assistModal">
+        <div class="modal-content">
+            <div class="modal-title">👟 Assist</div>
+            <select id="assistPlayer" style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;margin-bottom:8px;font-size:16px;">
+                <option value="">-- Wie gaf de assist? --</option>
+            </select>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="assistQuarter" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+                    <option value="1">K1</option><option value="2">K2</option><option value="3">K3</option><option value="4">K4</option>
+                </select>
+                <input type="number" id="assistMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+            </div>
+            <textarea id="assistText" placeholder="Toelichting..." style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:50px;margin-bottom:8px;font-size:16px;"></textarea>
+            <button class="modal-confirm" onclick="confirmAssist()">✓ Opslaan</button>
+            <button class="modal-close" onclick="closeAssistModal()">Annuleren</button>
+        </div>
+    </div>
+
+    <!-- Goed Modal -->
+    <div class="modal" id="goodModal">
+        <div class="modal-content">
+            <div class="modal-title">⭐ Goed moment</div>
+            <select id="goodPlayer" style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;margin-bottom:8px;font-size:16px;">
+                <option value="">-- Welke speler? --</option>
+            </select>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="goodQuarter" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+                    <option value="1">K1</option><option value="2">K2</option><option value="3">K3</option><option value="4">K4</option>
+                </select>
+                <input type="number" id="goodMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+            </div>
+            <textarea id="goodText" placeholder="Wat deed hij/zij goed?" style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:50px;margin-bottom:8px;font-size:16px;"></textarea>
+            <button class="modal-confirm" onclick="confirmGood()">✓ Opslaan</button>
+            <button class="modal-close" onclick="closeGoodModal()">Annuleren</button>
+        </div>
+    </div>
+
+    <!-- Kan beter Modal -->
+    <div class="modal" id="improveModal">
+        <div class="modal-content">
+            <div class="modal-title">📈 Kan beter</div>
+            <select id="improvePlayer" style="width:100%;padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;margin-bottom:8px;font-size:16px;">
+                <option value="">-- Welke speler? --</option>
+            </select>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="improveQuarter" style="flex:1;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+                    <option value="1">K1</option><option value="2">K2</option><option value="3">K3</option><option value="4">K4</option>
+                </select>
+                <input type="number" id="improveMinute" placeholder="Min" min="0" max="50" style="width:60px;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;">
+            </div>
+            <textarea id="improveText" placeholder="Wat kan beter?" style="width:100%;padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,215,0,0.3);border-radius:6px;color:white;min-height:50px;margin-bottom:8px;font-size:16px;"></textarea>
+            <button class="modal-confirm" onclick="confirmImprove()">✓ Opslaan</button>
+            <button class="modal-close" onclick="closeImproveModal()">Annuleren</button>
         </div>
     </div>
 
@@ -1839,6 +1892,42 @@
                 return;
             }
             
+            // Assist modal
+            if (type === 'assist') {
+                const available = getAvailablePlayers();
+                const options = available.map(p => `<option value="${p}">${p}</option>`).join('');
+                document.getElementById('assistPlayer').innerHTML = '<option value="">-- Wie gaf de assist? --</option>' + options;
+                document.getElementById('assistQuarter').value = clockQuarter;
+                document.getElementById('assistMinute').value = getMatchMinute();
+                document.getElementById('assistText').value = '';
+                document.getElementById('assistModal').classList.add('active');
+                return;
+            }
+            
+            // Goed modal
+            if (type === 'good') {
+                const available = getAvailablePlayers();
+                const options = available.map(p => `<option value="${p}">${p}</option>`).join('');
+                document.getElementById('goodPlayer').innerHTML = '<option value="">-- Welke speler? --</option>' + options;
+                document.getElementById('goodQuarter').value = clockQuarter;
+                document.getElementById('goodMinute').value = getMatchMinute();
+                document.getElementById('goodText').value = '';
+                document.getElementById('goodModal').classList.add('active');
+                return;
+            }
+            
+            // Kan beter modal
+            if (type === 'improve') {
+                const available = getAvailablePlayers();
+                const options = available.map(p => `<option value="${p}">${p}</option>`).join('');
+                document.getElementById('improvePlayer').innerHTML = '<option value="">-- Welke speler? --</option>' + options;
+                document.getElementById('improveQuarter').value = clockQuarter;
+                document.getElementById('improveMinute').value = getMatchMinute();
+                document.getElementById('improveText').value = '';
+                document.getElementById('improveModal').classList.add('active');
+                return;
+            }
+            
             // Wissel modal
             if (type === 'sub') {
                 const team = teams[currentTeam];
@@ -2011,6 +2100,67 @@
             renderNotes();
             closeTegenModal();
             showToast('🥅 Tegendoelpunt opgeslagen');
+        }
+        
+        function closeAssistModal() { document.getElementById('assistModal').classList.remove('active'); }
+        function closeGoodModal() { document.getElementById('goodModal').classList.remove('active'); }
+        function closeImproveModal() { document.getElementById('improveModal').classList.remove('active'); }
+        
+        function confirmAssist() {
+            const player = document.getElementById('assistPlayer').value;
+            if (!player) { alert('Selecteer een speler'); return; }
+            
+            const notes = getNotes();
+            notes.unshift({
+                type: 'assist',
+                player,
+                quarter: parseInt(document.getElementById('assistQuarter').value),
+                matchMinute: parseInt(document.getElementById('assistMinute').value) || getMatchMinute(),
+                text: document.getElementById('assistText').value,
+                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+            });
+            setNotes(notes);
+            renderNotes();
+            closeAssistModal();
+            showToast('👟 Assist opgeslagen');
+        }
+        
+        function confirmGood() {
+            const player = document.getElementById('goodPlayer').value;
+            if (!player) { alert('Selecteer een speler'); return; }
+            
+            const notes = getNotes();
+            notes.unshift({
+                type: 'good',
+                player,
+                quarter: parseInt(document.getElementById('goodQuarter').value),
+                matchMinute: parseInt(document.getElementById('goodMinute').value) || getMatchMinute(),
+                text: document.getElementById('goodText').value,
+                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+            });
+            setNotes(notes);
+            renderNotes();
+            closeGoodModal();
+            showToast('⭐ Goed moment opgeslagen');
+        }
+        
+        function confirmImprove() {
+            const player = document.getElementById('improvePlayer').value;
+            if (!player) { alert('Selecteer een speler'); return; }
+            
+            const notes = getNotes();
+            notes.unshift({
+                type: 'improve',
+                player,
+                quarter: parseInt(document.getElementById('improveQuarter').value),
+                matchMinute: parseInt(document.getElementById('improveMinute').value) || getMatchMinute(),
+                text: document.getElementById('improveText').value,
+                time: new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+            });
+            setNotes(notes);
+            renderNotes();
+            closeImproveModal();
+            showToast('📈 Notitie opgeslagen');
         }
         
         function shareLineup() {
